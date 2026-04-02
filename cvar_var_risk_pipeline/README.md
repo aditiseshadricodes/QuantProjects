@@ -31,9 +31,9 @@ Simulates returns from a fitted normal distribution and estimates tail losses fr
 
 ## Outputs
 The project saves:
-- `risk_summary.csv`
+- `var_cvar_summary.csv`
 - `portfolio_metrics.csv`
-- `portfolio_returns_histogram.png`
+- `portfolio_return_distribution.png`
 - `cumulative_wealth.png`
 - `drawdown.png`
 
