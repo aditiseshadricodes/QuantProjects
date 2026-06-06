@@ -30,7 +30,7 @@ def compute_log_prices(price_matrix):
     
     return log_price_matrix
 
-def estimate_hedge_ratio(log_price_matrix,asset_y,asset_x,min_observations=60):
+def estimate_hedge_model(log_price_matrix,asset_y,asset_x,min_observations=60):
     
     #Validation checks similar to data_validator.py    
     if not isinstance(log_price_matrix,pd.DataFrame):
@@ -71,11 +71,7 @@ def estimate_hedge_ratio(log_price_matrix,asset_y,asset_x,min_observations=60):
     return hedge_model
 
 def compute_spread(log_price_matrix,hedge_model):
-    asset_y = hedge_model['asset_y']
-    asset_x = hedge_model['asset_x']
-    alpha = hedge_model['alpha']
-    beta = hedge_model['beta']
-    
+        
     #log_price_matrix is a pandas DataFrame check
     if not isinstance(log_price_matrix, pd.DataFrame):
         raise TypeError("Input log price matrix must be a pandas DataFrame.")
@@ -98,7 +94,12 @@ def compute_spread(log_price_matrix,hedge_model):
     
     #Alpha and beta are numeric values check
     if not isinstance(hedge_model['alpha'],(int, float, np.number)) or not isinstance(hedge_model['beta'],(int, float, np.number)):
-        raise ValueError("Alpha and Beta in the hedge model must be numeric values.")   
+        raise TypeError("Alpha and Beta in the hedge model must be numeric values.")   
+    
+    asset_y = hedge_model['asset_y']
+    asset_x = hedge_model['asset_x']
+    alpha = hedge_model['alpha']
+    beta = hedge_model['beta']
     
     #Compute the spread using the formula: spread = log(y) - alpha - beta*log(x)
     spread = log_price_matrix[asset_y] - alpha - beta*log_price_matrix[asset_x]
