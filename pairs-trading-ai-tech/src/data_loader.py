@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import requests
-from src.data_validator import validate_price_matrix
+from src.data_validator import validation_price_matrix
 
 def fetch_tiingo_price_matrix(tickers,start_date,end_date,api_key=None,price_field='adjClose',validate=True):
     """
@@ -141,7 +141,7 @@ def fetch_tiingo_price_matrix(tickers,start_date,end_date,api_key=None,price_fie
     data_loader_checks_passed.append("Price matrix sorted by date.")
     
     if validate:
-        price_matrix,validation_diagnostics = validate_price_matrix(price_matrix)
+        price_matrix,validation_diagnostics = validation_price_matrix(price_matrix)
         data_loader_checks_passed.append('Price matrix validation applied.')
     else:
         data_loader_checks_passed.append('Price matrix validation skipped.')
