@@ -1,0 +1,14 @@
+{
+    "artifact_name": "v1_pair_model_outputs",
+    "notebook": "02_spread_modeling",
+    "selected_pair_count": 2,
+    "selected_pair_names": [
+        "META_CRM",
+        "AMZN_CRM"
+    ],
+    "saved_files": {
+        "selected_pairs_csv": "outputs/v1_selected_pairs.csv",
+        "pair_model_summary_csv": "outputs/v1_pair_model_summary.csv",
+        "pair_model_outputs_pickle": "outputs/v1_pair_model_outputs.pkl"
+    }
+}
