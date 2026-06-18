@@ -1,0 +1,6 @@
+{
+    "name":"top_100_stocks",
+    "code":"_v2_",
+    "tickers":["AAPL","MSFT","NVDA","GOOGL","META","AMZN","ADBE","CRM","ORCL","INTC"]
+    
+}
