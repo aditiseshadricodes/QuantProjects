@@ -54,3 +54,42 @@ def test_load_universe_config_duplicate_tickers(
     
     with pytest.raises(ValueError):
         load_universe_config(path)
+
+def test_load_universe_config_empty_tickers(
+    tmp_path
+):
+    
+    data = {"tickers":[]}
+    path = tmp_path/"v1_universe.json"
+    
+    with open(path, 'w') as file:
+        json.dump(data,file)
+    
+    with pytest.raises(ValueError):
+        load_universe_config(path)
+
+def test_load_universe_config_empty_str_tickers(
+    tmp_path
+):
+    
+    data = {"tickers":["AAPL","MSFT","","TSLA"]}
+    path = tmp_path/"v1_universe.json"
+    
+    with open(path,'w') as file:
+        json.dump(data,file)
+    
+    with pytest.raises(ValueError):
+        load_universe_config(path)
+
+def test_load_universe_config_non_str_tickers(
+    tmp_path
+):
+    
+    data = {"tickers":["AAPL",123,"MSFT"]}
+    path = tmp_path/"v1_universe.json"
+    
+    with open(path,'w') as file:
+        json.dump(data,file)
+    
+    with pytest.raises(TypeError):
+        load_universe_config(path)
