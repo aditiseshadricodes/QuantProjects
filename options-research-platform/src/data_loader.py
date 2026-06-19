@@ -115,7 +115,7 @@ def fetch_option_chain(
         raise ValueError("option types contain invalid values.")
     
     if not valid_option_types.issubset(options_types):
-        raise ValueError("Option cahin must have atleast one call and one put.")
+        raise ValueError("Option chain must have at least one call and one put.")
     
     return options_df
 
