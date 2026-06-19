@@ -27,7 +27,7 @@ def load_universe_config(
         raise ValueError("data should not be empty.")
     
     #Check if tickers exist in data
-    if not "tickers" in data:
+    if "tickers" not in data:
         raise ValueError("tickers should exist in data.")
     
     tickers = data["tickers"]
@@ -45,7 +45,7 @@ def load_universe_config(
     if any(ticker.strip()=="" for ticker in tickers):
         raise ValueError("tickers cannot have empty strings as tickers.")
     
-    tickers = [ticker.upper().strip() for ticker in tickers]
+    tickers = [ticker.strip().upper() for ticker in tickers]
     
     if len(tickers) != len(set(tickers)):
         raise ValueError("tickers cannot contain duplicate values.")
