@@ -37,7 +37,7 @@ def validate_option_chain_df(
     
     #expiry is parseable
     try:
-        pd.to_datetime(df["expiry"], errors="raise")
+        pd.to_datetime(df["expiry"], format = "%Y-%m-%d",errors="raise")
     except Exception as e:
         raise ValueError("expiry must be parseable as a date.") from e
     
