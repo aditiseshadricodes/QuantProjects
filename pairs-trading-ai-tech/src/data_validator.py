@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def validation_price_matrix(prices,min_observations=756,max_missing_threshold=0.05):
-    '''This function performs a variety of checks on the price matrix to ensure that
+    """This function performs a variety of checks on the price matrix to ensure that
         it is in the correct format, values are present, no duplications for timestamps
         and that the data is sorted by timestamp.
         
@@ -30,7 +30,7 @@ def validation_price_matrix(prices,min_observations=756,max_missing_threshold=0.
         Raises:
         TypeError if the input type is invalid
         ValueError if the data fails a required validation check
-    '''
+    """
     validation_checks_passed=[]
     # Check if the price matrix is a pandas DataFrame
     if not isinstance(prices,pd.DataFrame):
@@ -89,7 +89,7 @@ def validation_price_matrix(prices,min_observations=756,max_missing_threshold=0.
     return prices, list_of_diagnostics
 
 def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=0.05):
-    '''This function performs a variety of checks on the volume matrix to ensure that
+    """This function performs a variety of checks on the volume matrix to ensure that
         it is in the correct format, values are present, no duplications for timestamps
         and that the data is sorted by timestamp.
         
@@ -117,7 +117,7 @@ def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=
         Raises:
         TypeError if the input type is invalid
         ValueError if the data fails a required validation check
-    '''
+    """
     validation_checks_passed=[]
     # Check if the volume matrix is a pandas DataFrame
     if not isinstance(volumes,pd.DataFrame):
