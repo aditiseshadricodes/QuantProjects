@@ -1,6 +1,10 @@
 {
-    "name":"top_100_stocks",
+    "name":"top_50_stocks",
     "code":"_v2_",
-    "tickers":["AAPL","MSFT","NVDA","GOOGL","META","AMZN","ADBE","CRM","ORCL","INTC"]
+    "tickers":["MSFT","AAPL","AMZN","GOOGL","BRK-B","META","JNJ","JPM","V","XOM"
+            ,"WMT","BAC","PG","PFE","UNH","VZ","T","CVX","INTC","WFC","KO"
+            ,"CSCO","MA","HD","MRK","ORCL","BA","CMCSA","PEP","DIS","ABBV"
+            ,"MCD","AMGN","ABT","PM","MDT","NFLX","NKE","CRM","IBM","UNP"
+            ,"TXN","HON","LLY","ACN","COST","AVGO","NVDA","TMO","BMY"]
     
 }

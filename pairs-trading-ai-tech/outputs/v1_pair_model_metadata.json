@@ -1,10 +1,28 @@
 {
     "artifact_name": "v1_pair_model_outputs",
     "notebook": "02_spread_modeling",
-    "selected_pair_count": 2,
+    "selected_pair_count": 20,
     "selected_pair_names": [
-        "META_CRM",
-        "AMZN_CRM"
+        "MA_NVDA",
+        "V_MA",
+        "MA_AVGO",
+        "HD_UNP",
+        "UNP_TXN",
+        "HD_TXN",
+        "ABT_TXN",
+        "PG_HD",
+        "V_AVGO",
+        "ORCL_AVGO",
+        "V_NVDA",
+        "UNP_ACN",
+        "KO_COST",
+        "BRK-B_MA",
+        "TXN_HON",
+        "AAPL_UNP",
+        "MA_COST",
+        "JPM_V",
+        "BRK-B_KO",
+        "PG_COST"
     ],
     "saved_files": {
         "selected_pairs_csv": "outputs/v1_selected_pairs.csv",

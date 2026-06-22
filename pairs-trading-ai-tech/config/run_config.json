@@ -3,8 +3,8 @@
         "name":"pairs_trading"
     },
     "date_range":{
-        "start_date":"2020-01-01",
-        "end_date":"2024-12-31"
+        "start_date":"2019-01-01",
+        "end_date":"2025-12-31"
     },
     "data_loader":{
         "price_field":"adjClose",
@@ -20,7 +20,7 @@
         "csv_extension":".csv"
     },
     "pairs_selection":{
-        "top_n":5,
+        "top_n":50,
         "min_observations":60,
         "min_correlation":0.4,
         "pvalue_threshold":0.05,
