@@ -14,7 +14,7 @@ def test_load_universe_config_valid(
 ):
     
     data = {"tickers":["aapl","msft","nvda"]}
-    path = tmp_path / "v1_universe.json"
+    path = tmp_path / "v2_universe.json"
     
     with open(path, 'w') as  file:
         json.dump(data,file)
@@ -29,7 +29,7 @@ def test_load_universe_config_missing_key(
 ):
     
     data = {"symbols":["aapl","msft","nvda"]}
-    path = tmp_path / "v1_universe.json"
+    path = tmp_path / "v2_universe.json"
     
     with open(path, 'w') as file:
         json.dump(data, file)
@@ -43,7 +43,7 @@ def test_load_universe_config_tickers_bad_type(
 ):
     
     data = {"tickers":"AAPL"}
-    path = tmp_path / "v1_universe.json"
+    path = tmp_path / "v2_universe.json"
     
     with open(path, 'w') as file:
         json.dump(data,file)
@@ -57,7 +57,7 @@ def test_load_universe_config_duplicate_tickers(
 ):
     
     data = {"tickers":["AAPL","MSFT","AAPL"]}
-    path = tmp_path / "v1_universe.json"
+    path = tmp_path / "v2_universe.json"
     
     with open(path, 'w') as file:
         json.dump(data,file)
@@ -71,7 +71,7 @@ def test_load_universe_config_empty_tickers(
 ):
     
     data = {"tickers":[]}
-    path = tmp_path/"v1_universe.json"
+    path = tmp_path/"v2_universe.json"
     
     with open(path, 'w') as file:
         json.dump(data,file)
@@ -85,7 +85,7 @@ def test_load_universe_config_empty_str_tickers(
 ):
     
     data = {"tickers":["AAPL","MSFT","","TSLA"]}
-    path = tmp_path/"v1_universe.json"
+    path = tmp_path/"v2_universe.json"
     
     with open(path,'w') as file:
         json.dump(data,file)
@@ -99,7 +99,7 @@ def test_load_universe_config_non_str_tickers(
 ):
     
     data = {"tickers":["AAPL",123,"MSFT"]}
-    path = tmp_path/"v1_universe.json"
+    path = tmp_path/"v2_universe.json"
     
     with open(path,'w') as file:
         json.dump(data,file)
