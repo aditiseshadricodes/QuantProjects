@@ -160,3 +160,55 @@ def inverse_volatility(
     
     logger.info("Calculating inverse spread_volatility weights for %s pairs.",len(selected_pairs_df))
     return normalize_weights(inv_vol)
+
+def validate_portfolio_weights_by_fold(
+    portfolio_weights_df: pd.DataFrame,
+    fold_pair_model_artifacts: dict,
+    tolerance: float = 1e-8
+):
+    
+    required_cols = {"fold_id", "pair_key", "weight_method", "weight"}
+    missing_cols = required_cols - set(portfolio_weights_df.columns)
+    
+    if missing_cols:
+        raise ValueError(f"Missing required portfolio columns: {missing_cols}")
+    
+    if portfolio_weights_df.empty:
+        raise ValueError("The portfolio_weights_dataframe should not be empty.")
+    
+    if portfolio_weights_df["weight"].isna().any():
+        raise ValueError("Portfolio weights should not have any null values.")
+    
+    if (portfolio_weights_df["weight"] < 0).any():
+        raise ValueError("Portfolio weights contain negative values.")
+    
+    weight_sums = (
+        portfolio_weights_df
+        .groupby(["fold_id","weight_method"])["weight"]
+        .sum()
+    )
+    
+    bad_sums = weight_sums[(weight_sums-1.0).abs() > tolerance]
+    
+    if not bad_sums.empty:
+        raise ValueError(f"Portfolio weights do not sum to 1: {bad_sums.to_dict()}")
+    
+    for fold_id, fold_weights_df in portfolio_weights_df.groupby("fold_id"):
+        if fold_id not in fold_pair_model_artifacts:
+            raise ValueError(f"{fold_id} missing from fold_pair_model_artifacts.")
+
+        model_pair_keys = set(
+            fold_pair_model_artifacts[fold_id]["hedge_models_by_pair"].keys()
+        )
+
+        weight_pair_keys = set(fold_weights_df["pair_key"])
+
+        missing_model_pairs = weight_pair_keys - model_pair_keys
+
+        if missing_model_pairs:
+            raise ValueError(
+                f"{fold_id} has weights for pairs missing model artifacts: "
+                f"{sorted(missing_model_pairs)}"
+            )
+
+    print("Portfolio weight validation passed.")
