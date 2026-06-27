@@ -393,3 +393,90 @@ def summarize_backtest_performance(
     }
     
     return results
+
+def summarize_return_series_performance(
+    strategy_returns,
+    fold_id=None,
+    weight_method=None,
+    periods_per_year=252,
+    risk_free_rate=0.0,
+    newey_west_lags=5,
+):
+    
+    strategy_returns = _validate_returns(strategy_returns)
+    
+    cumulative_returns = compute_cumulative_returns(strategy_returns)
+    
+    try:
+        newey_west_summary = compute_newey_west_tstat(
+            strategy_returns=strategy_returns,
+            lags=newey_west_lags,
+            periods_per_year=periods_per_year
+        )
+        
+    except ValueError:
+        newey_west_summary = {
+            "alpha":np.nan,
+            "annualized_alpha":np.nan,
+            "newey_west_standard_error":np.nan,
+            "newey_west_tstat":np.nan,
+            "newey_west_pvalue":np.nan
+        }
+    
+    return {
+        "fold_id": fold_id,
+        "weight_method": weight_method,
+        "start_date": strategy_returns.index.min(),
+        "end_date": strategy_returns.index.max(),
+        "n_observations": len(strategy_returns),
+        "final_cumulative_return": cumulative_returns.iloc[-1],
+        "mean_daily_return": compute_mean_daily_return(strategy_returns),
+        "annualized_return": compute_annualized_return(strategy_returns, periods_per_year),
+        "annualized_volatility": compute_annualized_volatility(strategy_returns, periods_per_year),
+        "sharpe_ratio": compute_sharpe_ratio(
+            strategy_returns,
+            periods_per_year=periods_per_year,
+            risk_free_rate=risk_free_rate,
+        ),
+        "max_drawdown": compute_max_drawdown(strategy_returns),
+        "hit_rate": compute_hit_rate(strategy_returns),
+        "alpha": newey_west_summary["alpha"],
+        "annualized_alpha": newey_west_summary["annualized_alpha"],
+        "newey_west_standard_error": newey_west_summary["newey_west_standard_error"],
+        "newey_west_tstat": newey_west_summary["newey_west_tstat"],
+        "newey_west_pvalue": newey_west_summary["newey_west_pvalue"],
+        "newey_west_lags": newey_west_lags
+    }
+
+def summarize_portfolio_by_fold(
+    portfolio_returns_by_fold,
+    periods_per_year = 252,
+    risk_free_rate = 0.0,
+    newey_west_lags = 5
+):
+    
+    if not isinstance(portfolio_returns_by_fold, dict):
+        raise TypeError("portfolio_returns_by_fold should be a dictionary.")
+    
+    records = []
+    
+    for fold_id, portfolio_returns_df in portfolio_returns_by_fold.items():
+        if not isinstance(portfolio_returns_df,pd.DataFrame):
+            raise TypeError("portfolio_returns_df should be a pandas DataFrame.")
+        
+        if portfolio_returns_df.empty:
+            raise ValueError("portfolio_returns_df should not be empty.")
+        
+        for weight_method in portfolio_returns_df.columns:
+            metrics = summarize_return_series_performance(
+                portfolio_returns_df[weight_method],
+                fold_id=fold_id,
+                weight_method=weight_method,
+                periods_per_year=periods_per_year,
+                risk_free_rate=risk_free_rate,
+                newey_west_lags=newey_west_lags,
+            )
+            
+            records.append(metrics)
+    
+    return pd.DataFrame(records)
