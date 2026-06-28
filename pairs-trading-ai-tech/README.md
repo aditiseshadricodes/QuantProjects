@@ -43,4 +43,4 @@ Mention config, notebooks, and output artifacts.
 Research project only; not investment advice.
 
 # V1 Result
-The V1 META_CRM backtest generated a 269.8% final cumulative return, 30.0% annualized return, 0.81 Sharpe ratio, and a Newey-West adjusted t-statistic of 2.34. However, the strategy also experienced a -35.4% maximum drawdown, so the result is treated as an in-sample research finding requiring further robustness testing.
+The V1 META_CRM backtest generated a 92% final cumulative return, 9.8% annualized return, 0.36 Sharpe ratio, and a Newey-West adjusted t-statistic of 1.68. However, the strategy also experienced a -31.4% maximum drawdown, so the result is treated as an in-sample research finding requiring further robustness testing.
