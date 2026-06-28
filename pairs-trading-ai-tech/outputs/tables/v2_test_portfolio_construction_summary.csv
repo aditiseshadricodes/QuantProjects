@@ -1,0 +1,4 @@
+fold_id,n_methods,n_failed_method_pairs,portfolio_returns_shape,start_date,end_date,status
+fold_1,3,0,"(250, 3)",2022-01-04 00:00:00+00:00,2022-12-30 00:00:00+00:00,success
+fold_2,3,0,"(249, 3)",2023-01-04 00:00:00+00:00,2023-12-29 00:00:00+00:00,success
+fold_3,3,0,"(251, 3)",2024-01-03 00:00:00+00:00,2024-12-31 00:00:00+00:00,success

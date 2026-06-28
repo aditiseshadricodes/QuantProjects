@@ -1,0 +1,4 @@
+fold_id,n_pairs_expected,n_pairs_successful,n_pairs_failed,pair_returns_shape,total_missing_values,start_date,end_date,status
+fold_1,50,50,0,"(250, 50)",0,2022-01-04 00:00:00+00:00,2022-12-30 00:00:00+00:00,success
+fold_2,50,50,0,"(249, 50)",0,2023-01-04 00:00:00+00:00,2023-12-29 00:00:00+00:00,success
+fold_3,24,24,0,"(251, 24)",0,2024-01-03 00:00:00+00:00,2024-12-31 00:00:00+00:00,success
