@@ -155,7 +155,7 @@ Performance evaluation includes:
 | Module              | Purpose                                |
 | ------------------- | -------------------------------------- |
 | `data_validator.py` | Price and volume validation            |
-| `pair_selection.py` | Pair filtering and ranking             |
+| `pairs_selection.py`| Pair filtering and ranking             |
 | `spread_model.py`   | Hedge ratio, spread, and z-score logic |
 | `backtest.py`       | Pair-level backtest logic              |
 | `walk_forward.py`   | Fold generation and fold slicing       |
