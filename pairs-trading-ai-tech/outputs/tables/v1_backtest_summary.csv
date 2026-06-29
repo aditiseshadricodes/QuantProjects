@@ -1,2 +1,0 @@
-n_observations,final_cumulative_return,mean_daily_return,annualized_return,annualized_volatility,sharpe_ratio,max_drawdown,hit_rate,number_of_position_changes,turnover,total_transaction_costs,alpha,annualized_alpha,newey_west_standard_error,newey_west_tstat,newey_west_pvalue,newey_west_lags
-1759,0.9249471425648839,0.0004397568464518989,0.09836517271852441,0.18492785119994112,0.3696856491595149,-0.31477966220596065,0.22342239909039227,70,72.0,0.144,0.00043975684645189894,0.11081872530587854,0.000261411603221426,1.6822392006808031,0.09252246547881358,5

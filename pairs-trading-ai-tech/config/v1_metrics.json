@@ -1,5 +1,0 @@
-{
-    "periods_per_year":252,
-    "risk_free_rate":0.03,
-    "newey_west_lags":5
-}
