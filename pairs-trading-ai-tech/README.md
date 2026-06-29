@@ -214,7 +214,7 @@ Current limitations include:
 
 * static universe construction,
 * possible survivorship bias,
-* simplified transaction-cost assumptions,
+* the results have a zero-cost baseline assumption,
 * limited benchmark-relative analysis,
 * no stress-testing layer yet,
 * and no live trading/execution integration.
