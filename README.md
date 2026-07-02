@@ -16,7 +16,7 @@ The repository emphasizes:
 
 | Project                           | Status                     | Focus                                                                        |
 | --------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| `pairs-trading-ai-tech`           | Active V2                  | Equity statistical arbitrage, walk-forward validation, portfolio backtesting |
+| `pairs-trading-ai-tech`           | Complete V2, 2.1 scheduled | Equity statistical arbitrage, walk-forward validation, portfolio backtesting |
 | `Crypto_Cross-sectional_momentum` | Complete notebook research | Crypto momentum, train/test/OOS evaluation                                   |
 | `cvar_var_risk_pipeline`          | Complete small project     | VaR/CVaR risk analytics                                                      |
 | `options-research-platform`       | Early WIP                  | Options pricing, Greeks, volatility, risk tooling                            |
@@ -37,7 +37,7 @@ It currently includes:
 * performance diagnostics,
 * and pytest coverage for key modules.
 
-The project is currently in V2 development. Results are treated as research diagnostics, not production trading claims.
+The project is currently in V2.1 development. Results are treated as research diagnostics, not production trading claims.
 
 ## Repository Structure
 
