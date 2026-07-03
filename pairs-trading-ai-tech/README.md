@@ -206,6 +206,18 @@ The final V2 test and OOS analysis shows mixed results. Test-period behavior doe
 
 The weighting-method comparison suggests that rank weighting is the least weak method on average in the current outputs, but the evidence is not strong enough to conclude that it solves the strategy instability.
 
+### Reproducuibility Check
+
+The project was validated in a clean WSL/Linux environment using a fresh virtual environment.
+
+Validation commands:
+```bash
+python -m compileall src
+pytest
+```
+Result:
+117 tests passed.
+
 ## 8. How to Run
 
 Create and activate a virtual environment.
