@@ -35,32 +35,6 @@ logger = logging.getLogger(__name__)
 # Private Functions
 # =========================
 
-def _norm_cdf(
-    x: float
-) -> float:
-    """ 
-    Return the cumulative distribution function value for a standard
-    normal variable.
-    
-    Parameters
-    -------------
-    x : float
-        Input value.
-    
-    Returns
-    -------------
-    Standard normal CDF value between 0 and 1.
-    
-    Raises
-    -------------
-    TypeError
-        If x is not a numeric type(int or float).
-    """
-    if not isinstance(x, (int,float)):
-        raise TypeError(f"Input x must be numeric, got {type(x)}")
-    
-    return 0.5 * (1 + math.erf(x / math.sqrt(2)))
-
 def _standardize_option_type(
     option_type: str
 ) -> str:
@@ -213,6 +187,33 @@ def _validate_non_negative_float(
         raise ValueError(f"{name} must be non-negative, got {value}")
     return value
 
+def _norm_cdf(
+    x: float
+) -> float:
+    """ 
+    Return the cumulative distribution function value for a standard
+    normal variable.
+    
+    Parameters
+    -------------
+    x : float
+        Input value.
+    
+    Returns
+    -------------
+    Standard normal CDF value between 0 and 1.
+    
+    Raises
+    -------------
+    TypeError
+        If x is not a numeric type(int or float).
+    ValueError
+        If x is not finite.
+    """
+    x = _validate_finite_float(x,"x")
+    
+    return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+
 def _validate_scalar_pricing_inputs(
     spot,
     strike,
@@ -271,11 +272,66 @@ def _validate_scalar_pricing_inputs(
         dividend_yield
     )
 
-def _d1d2():
+def _d1d2(
+    spot,
+    strike,
+    time_to_expiry,
+    risk_free_rate,
+    volatility,
+    dividend_yield=0.0
+):
     """ 
+    Calculate the Black-Scholes d1 and d2 terms.
+    The d1 and d2 terms are intermediate quantities used in the
+    Black-Scholes-Merton pricing formula for European call and put options.
+    This helper assumes strictly positive time to expiry because d1 and d2
+    divide by sqrt(time_to_expiry).
+
+    Parameters
+    ----------
+    spot : float
+        Current price of the underlying asset. Must be positive and finite.
+    strike : float
+        Strike price of the option. Must be positive and finite.
+    time_to_expiry : float
+        Time to expiry in years. Must be strictly positive.
+    risk_free_rate : float
+        Annualized continuously compounded risk-free rate. Must be finite.
+        Negative rates are allowed.
+    volatility : float
+        Annualized volatility as a decimal. Must be positive and finite.
+    dividend_yield : float, default 0.0
+        Annualized continuous dividend yield. Must be non-negative and finite.
+
+    Returns
+    -------
+    tuple[float, float]
+        The d1 and d2 values used in Black-Scholes-Merton pricing.
+
+    Raises
+    ------
+    TypeError
+        If any numeric input is not a real numeric scalar.
+    ValueError
+        If spot, strike, time_to_expiry, or volatility are not positive;
+        if dividend_yield is negative; or if any numeric input is not finite.
+        """
+    spot = _validate_positive_float(spot,"spot")
+    strike = _validate_positive_float(strike,"strike")
+    time_to_expiry = _validate_positive_float(time_to_expiry,"time_to_expiry")
+    risk_free_rate = _validate_finite_float(risk_free_rate,"risk_free_rate")
+    volatility = _validate_positive_float(volatility,"volatility")
+    dividend_yield = _validate_non_negative_float(dividend_yield,"dividend_yield")
     
-    """
-    pass
+    #Compute square root of time to expiry and ln(moneyness)
+    sqrt_t = math.sqrt(time_to_expiry)
+    log_moneyness = math.log(spot / strike)
+    
+    #Compute d1 and d2 using the Black-Scholes-Merton formulas
+    d1 = (log_moneyness + (risk_free_rate - dividend_yield + 0.5 *volatility**2) * time_to_expiry) / (volatility * sqrt_t)
+    d2 = d1 - volatility * sqrt_t
+    
+    return d1, d2
 
 def _time_to_expiry():
     """ 
@@ -340,11 +396,86 @@ def intrinsic_value(
     intrinsic = max(sign*(spot-strike),0)
     return intrinsic
 
-def black_scholes_price():
+def black_scholes_price(
+    spot,
+    strike,
+    time_to_expiry,
+    risk_free_rate,
+    volatility,
+    option_type,
+    dividend_yield=0.0
+):
     """ 
-    
+    Calculate the Black-Scholes-Merton price for a European call or put option.
+
+    This function prices a single vanilla European-style option using scalar
+    inputs. It supports continuous dividend yield and handles expiry-day pricing
+    by returning intrinsic value when time_to_expiry is zero.
+
+    Parameters
+    ----------
+    spot : float
+        Current price of the underlying asset. Must be positive and finite.
+    strike : float
+        Strike price of the option. Must be positive and finite.
+    time_to_expiry : float
+        Time to expiry in years. Must be non-negative.
+    risk_free_rate : float
+        Annualized continuously compounded risk-free rate. Must be finite.
+        Negative rates are allowed.
+    volatility : float
+        Annualized volatility as a decimal. Must be positive and finite.
+    option_type : str
+        Option type. Accepted values are call/c or put/p, case-insensitive.
+    dividend_yield : float, default 0.0
+        Annualized continuous dividend yield. Must be non-negative and finite.
+
+    Returns
+    -------
+    float
+        Black-Scholes-Merton theoretical option price.
+
+    Raises
+    ------
+    TypeError
+        If numeric inputs are not real numeric scalars, or if option_type is not a string.
+    ValueError
+        If spot, strike, or volatility are not positive; if time_to_expiry
+        or dividend_yield are negative; if any numeric input is not finite;
+        or if option_type is invalid.
+
     """
-    pass
+    #Validate option type and scalars
+    spot = _validate_positive_float(spot,"spot")
+    strike = _validate_positive_float(strike,"strike")
+    time_to_expiry = _validate_non_negative_float(time_to_expiry,"time_to_expiry")
+    risk_free_rate = _validate_finite_float(risk_free_rate,"risk_free_rate")
+    volatility = _validate_positive_float(volatility,"volatility")
+    dividend_yield = _validate_non_negative_float(dividend_yield,"dividend_yield")
+    option_type = _standardize_option_type(option_type)
+    sign = _option_sign(option_type)
+    
+    #If option is at expiry return intrinsic value.
+    if time_to_expiry == 0:
+        return intrinsic_value(spot,strike,option_type)
+    
+    #Calculate d1,d2 for Black-Scholes-Merton formula
+    d1,d2 = _d1d2(
+        spot,
+        strike,
+        time_to_expiry,
+        risk_free_rate,
+        volatility,
+        dividend_yield
+    )
+    
+    #Compute the discount factors for risk-free rate and dividend yield
+    spot_dividend_discount = math.exp(-dividend_yield * time_to_expiry)
+    risk_free_discount = math.exp(-risk_free_rate * time_to_expiry)
+    
+    #Calculate the Black-Scholes-Merton price using the formula
+    price = sign * (spot *spot_dividend_discount * _norm_cdf(sign*d1) - strike * risk_free_discount * _norm_cdf(sign*d2))
+    return price
 
 def price_option_chain():
     """ 
