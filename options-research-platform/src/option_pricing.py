@@ -333,11 +333,50 @@ def _d1d2(
     
     return d1, d2
 
-def _time_to_expiry():
+def _time_to_expiry(
+    valuation_date,
+    expiry_date
+) -> float:
     """ 
+    Compute a time to expiry in years using a simple calendar-day convention.
     
+    Parameters
+    ----------
+    valuation_date:str, datetime-like or pandas.Timestamp 
+        Date on which the option is valued.
+    expiry_date:str, datetime-like or pandas.Timestamp 
+        Option expiry date.
+    
+    Returns
+    -------
+    float
+        Time to expiry in years. 
+        computed as calendar days / 365.0
+    
+    Raises
+    ------
+    ValueError
+        If expiry_date is before valuation_date or if dates can't be parsed.
+    
+    Notes
+    -----
+    V1 uses calendar days and a 365-day year. It does not use trading-day calendars,
+    holiday calendars, intraday expiry times, or timezone logic.
     """
-    pass
+    try:
+        valuation_ts = pd.Timestamp(valuation_date).normalize()
+        expiry_ts = pd.Timestamp(expiry_date).normalize()
+    except Exception as e:
+        raise ValueError("valuation_date and expiry_date must be parseable.") from e
+    
+    if pd.isna(valuation_ts) or pd.isna(expiry_ts):
+        raise ValueError("valuation_date and expiry_date must be valid dates.")
+    
+    if expiry_ts < valuation_ts:
+        raise ValueError("expiry_date cannot be before valuation_date.")
+    
+    calendar_days = (expiry_ts - valuation_ts).days
+    return calendar_days/365.0
 
 def _get_spot_price():
     """ 

@@ -1,5 +1,6 @@
 import math
 import pytest
+import pandas as pd
 
 from src.option_pricing import (
     _norm_cdf,
@@ -11,6 +12,7 @@ from src.option_pricing import (
     _validate_scalar_pricing_inputs,
     _d1d2,
     black_scholes_price,
+    _time_to_expiry,
 )
 
 def test_norm_cdf_valid_inputs():
@@ -506,3 +508,30 @@ def test_black_scholes_price_invalid_inputs():
             "banana",
             0.0
         )
+
+def test_time_to_expiry_one_year_returns_one():
+    result = _time_to_expiry("2024-01-01", "2024-12-31")
+    assert result == pytest.approx(365 / 365.0)
+
+def test_time_to_expiry_same_day_returns_zero():
+    result = _time_to_expiry("2024-01-01","2024-01-01")
+    assert result == 0.0
+
+def test_time_to_expiry_expiry_before_valuation_raises_value_error():
+    with pytest.raises(ValueError):
+        _time_to_expiry("2024-01-02", "2024-01-01")
+
+def test_time_to_expiry_string_inputs_parse_correctly():
+    result = _time_to_expiry("2024-01-01","2024-01-31")
+    assert result == pytest.approx(30/365.0)
+
+def test_time_to_expiry_timestamp_inputs_work():
+    result = _time_to_expiry(
+        pd.Timestamp("2024-01-01"),
+        pd.Timestamp("2024-04-01")
+    )
+    assert result == pytest.approx(91/365.0)
+
+def test_time_to_expiry_invalid_date():
+    with pytest.raises(ValueError):
+        _time_to_expiry("not-a-date", "2024-01-01")
