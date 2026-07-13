@@ -13,7 +13,19 @@ from src.option_pricing import (
     _d1d2,
     black_scholes_price,
     _time_to_expiry,
+    _get_spot_price,
+    _price_option_row,
+    price_option_chain,
 )
+
+@pytest.fixture
+def sample_option_chain():
+    return pd.DataFrame({
+        "strike":[100.0, 100.0],
+        "expiry_date":["2024-12-31", "2024-12-31"],
+        "option_type":["call", "put"],
+        "implied_volatility":[0.20, 0.20],
+    })
 
 def test_norm_cdf_valid_inputs():
     
@@ -535,3 +547,228 @@ def test_time_to_expiry_timestamp_inputs_work():
 def test_time_to_expiry_invalid_date():
     with pytest.raises(ValueError):
         _time_to_expiry("not-a-date", "2024-01-01")
+
+def test_get_spot_price_valid_input():
+    
+    assert _get_spot_price(100) == pytest.approx(100.0)
+    assert _get_spot_price(150.625) == pytest.approx(150.625, rel=1e-2)
+
+def test_get_spot_price_invalid_inputs():
+    
+    with pytest.raises(ValueError):
+        _get_spot_price(0)
+    
+    with pytest.raises(ValueError):
+        _get_spot_price(-100)
+    
+    with pytest.raises(TypeError):
+        _get_spot_price("100.50")
+    
+    with pytest.raises(TypeError):
+        _get_spot_price(True)
+    
+    with pytest.raises(ValueError):
+        _get_spot_price(float('inf'))
+    
+    with pytest.raises(ValueError):
+        _get_spot_price(float('nan'))
+
+def test_prices_option_row_valid_call():
+    row = pd.Series({
+        "strike":100.0,
+        "expiry_date":"2024-12-31",
+        "option_type":"call",
+        "implied_volatility":0.20,
+    })
+    
+    result = _price_option_row(
+        row=row,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        volatility_col="implied_volatility"
+    )
+    
+    assert result == pytest.approx(10.4506,rel=1e-4)
+
+def test_prices_option_row_valid_put():
+    row = pd.Series({
+        "strike":100.0,
+        "expiry_date":"2024-12-31",
+        "option_type":"put",
+        "implied_volatility":0.20,
+    })
+    
+    result = _price_option_row(
+        row=row,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        volatility_col="implied_volatility"
+    )
+    
+    assert result == pytest.approx(5.5735,rel=1e-4)
+
+def test_prices_option_row_same_day_expiry():
+    row = pd.Series({
+        "strike":90.0,
+        "expiry_date":"2024-01-01",
+        "option_type":"call",
+        "implied_volatility":0.20,
+    })
+    
+    result = _price_option_row(
+        row=row,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        volatility_col="implied_volatility"
+    )
+    
+    assert result == pytest.approx(10.0, rel=1e-2)
+
+def test_prices_option_row_missing_col():
+    row = pd.Series({
+        "Strike":100.0,
+        "expiry_date":"2024-12-31",
+        "option_type":"call",
+        "volatility_col":0.20,
+    })
+    
+    with pytest.raises(KeyError):
+        _price_option_row(
+            row=row,
+            valuation_date="2024-01-01",
+            spot_price=100.0,
+            risk_free_rate=0.05,
+            dividend_yield=0.0,
+            volatility_col=0.2
+        )
+
+def test_prices_option_row_custom_vol():
+    row = pd.Series({
+        "strike":100.0,
+        "expiry_date":"2024-12-31",
+        "option_type":"call",
+        "vol":0.20,
+    })
+    
+    result = _price_option_row(
+        row=row,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        volatility_col="vol"
+    )
+    
+    assert result == pytest.approx(10.4506,rel=1e-4)
+
+def test_price_option_chain_valid_chain(sample_option_chain):
+    result = price_option_chain(
+        option_chain=sample_option_chain,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+    )
+    
+    assert "model_price" in result.columns
+
+def test_price_option_chain_correct_call_put_prices(sample_option_chain):
+    result = price_option_chain(
+        option_chain=sample_option_chain,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+    )
+    
+    assert result.loc[0,"model_price"] == pytest.approx(10.4506,rel=1e-4)
+    assert result.loc[1,"model_price"] == pytest.approx(5.5735,rel=1e-4)
+
+def test_price_option_chain_original_df(sample_option_chain):
+    
+    assert "model_price" not in sample_option_chain.columns
+
+def test_price_option_chain_custom_output_col(sample_option_chain):
+    result = price_option_chain(
+        option_chain=sample_option_chain,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        output_col="bs_price"
+    )
+    
+    assert "bs_price" in result.columns
+    assert "model_price" not in result.columns
+
+def test_price_option_chain_custom_vol_column():
+    option_chain = pd.DataFrame({
+        "strike":[100.0, 100.0],
+        "expiry_date":["2024-12-31", "2024-12-31"],
+        "option_type":["call", "put"],
+        "vol":[0.20, 0.20],
+    })
+    
+    result = price_option_chain(
+        option_chain=option_chain,
+        valuation_date="2024-01-01",
+        spot_price=100.0,
+        risk_free_rate=0.05,
+        dividend_yield=0.0,
+        volatility_col="vol"
+    )
+    
+    assert result.loc[0,"model_price"] == pytest.approx(10.4506,rel=1e-4)
+    assert result.loc[1,"model_price"] == pytest.approx(5.5735,rel=1e-4)
+
+def test_price_option_chain_missing_key():
+    option_chain = pd.DataFrame({
+        "Strike":[100.0, 100.0],
+        "expiry_date":["2024-12-31", "2024-12-31"],
+        "option_type":["call", "put"],
+        "implied_volatility":[0.20, 0.20],
+    })
+    
+    with pytest.raises(KeyError):
+        price_option_chain(
+            option_chain=option_chain,
+            valuation_date="2024-01-01",
+            spot_price=100.0,
+            risk_free_rate=0.05,
+            dividend_yield=0.0
+        )
+
+def test_price_option_chain_bad_option_chain():
+    option_chain = []
+    
+    with pytest.raises(TypeError):
+        price_option_chain(
+            option_chain=option_chain,
+            valuation_date="2024-01-01",
+            spot_price=100.0,
+            risk_free_rate=0.05,
+            dividend_yield=0.0
+        )
+
+def test_price_option_chain_invalid_vol():
+    option_chain = pd.DataFrame({
+        "strike":[100.0, 100.0],
+        "expiry_date":["2024-12-31", "2024-12-31"],
+        "option_type":["call", "put"],
+        "implied_volatility":[0.0, 0.0],
+    })
+    
+    with pytest.raises(ValueError):
+        price_option_chain(
+            option_chain=option_chain,
+            valuation_date="2024-01-01",
+            spot_price=100.0,
+            risk_free_rate=0.05,
+            dividend_yield=0.0
+        )

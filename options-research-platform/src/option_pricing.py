@@ -378,17 +378,106 @@ def _time_to_expiry(
     calendar_days = (expiry_ts - valuation_ts).days
     return calendar_days/365.0
 
-def _get_spot_price():
+def _get_spot_price(
+    spot
+) -> float:
     """ 
+    Fetches the clean, positive spot price from the given spot input.
     
+    Parameters
+    ----------
+    input spot value provided.
+    
+    Returns
+    -------
+    float
+        Positive numeric spot price.
+    
+    Raises
+    ------
+    TypeError
+        If the input spot is not numeric.
+    ValueError
+        If spot is infinite or not positive.
     """
-    pass
+    spot = _validate_positive_float(spot,"spot")
+    return spot
 
-def _prices_option_row():
-    """ 
+def _price_option_row(
+    row,
+    valuation_date,
+    spot_price,
+    risk_free_rate,
+    dividend_yield=0.0,
     
+volatility_col = "implied_volatility",
+):
+    """ 
+    Price a single option-chain row using the Black-Scholes model.
+
+    The row is expected to represent one option contract. Contract-specific
+    fields, such as strike, expiry date, option type, and volatility, are read
+    from the row. Pricing-run inputs, such as valuation date, spot price,
+    risk-free rate, and dividend yield, are supplied separately.
+
+    Time to expiry is computed internally using:
+
+        T = _time_to_expiry(valuation_date, row["expiry_date"])
+
+    Parameters
+    ----------
+    row : pandas.Series or mapping
+        One option contract row. Must contain ``strike``, ``expiry_date``,
+        ``option_type``, and the selected volatility column.
+    valuation_date : str, datetime-like, or pandas.Timestamp
+        Date on which the option is valued. Used with the row-level expiry
+        date to compute Black-Scholes time to expiry.
+    spot_price : float
+        Current underlying spot price for the option chain.
+    risk_free_rate : float
+        Annualized continuously compounded risk-free rate, in decimal form.
+    dividend_yield : float, default 0.0
+        Annualized continuous dividend yield, in decimal form.
+    volatility_col : str, default "implied_volatility"
+        Name of the row column containing annualized volatility, in decimal
+        form.
+
+    Returns
+    -------
+    float
+        Black-Scholes model price for the option row.
+
+    Raises
+    ------
+    KeyError
+        If the row is missing a required option-pricing field.
+    TypeError
+        If scalar inputs have invalid types.
+    ValueError
+        If scalar inputs contain invalid values.
     """
-    pass
+    required_cols = ["strike","expiry_date","option_type",volatility_col]
+    missing_cols = [col for col in required_cols if col not in row]
+    
+    if missing_cols:
+        raise KeyError(f"Missing required option row columns: {missing_cols}")
+    
+    spot_price = _get_spot_price(spot_price)
+    
+    time_to_expiry = _time_to_expiry(
+        valuation_date=valuation_date,
+        expiry_date=row["expiry_date"],
+    )
+    
+    return black_scholes_price(
+        spot=spot_price,
+        strike=row["strike"],
+        time_to_expiry=time_to_expiry,
+        risk_free_rate=risk_free_rate,
+        volatility=row[volatility_col],
+        option_type=row["option_type"],
+        dividend_yield=dividend_yield
+    )
 
 # ==========================
 # Public Functions
@@ -516,8 +605,82 @@ def black_scholes_price(
     price = sign * (spot *spot_dividend_discount * _norm_cdf(sign*d1) - strike * risk_free_discount * _norm_cdf(sign*d2))
     return price
 
-def price_option_chain():
+def price_option_chain(
+    option_chain,
+    valuation_date,
+    spot_price,
+    risk_free_rate,
+    dividend_yield=0.0,
+    volatility_col="implied_volatility",
+    output_col="model_price",
+):
     """ 
-    
+    Price an option chain using the Black-Scholes model.
+
+    The input DataFrame is expected to contain one row per option contract.
+    Contract-specific fields are read from each row, while pricing-run inputs
+    such as valuation date, spot price, risk-free rate, and dividend yield are
+    supplied once and shared across the chain.
+
+    Each row is priced by ``_price_option_row``. The returned DataFrame is a
+    copy of the input with an additional model price column.
+
+    Parameters
+    ----------
+    option_chain : pandas.DataFrame
+        Option chain with one row per contract. Must contain ``strike``,
+        ``expiry_date``, ``option_type``, and the selected volatility column.
+    valuation_date : str, datetime-like, or pandas.Timestamp
+        Date on which the options are valued. Used with each row's expiry date
+        to compute time to expiry.
+    spot_price : float
+        Current underlying spot price shared by the option chain.
+    risk_free_rate : float
+        Annualized continuously compounded risk-free rate, in decimal form.
+    dividend_yield : float, default 0.0
+        Annualized continuous dividend yield, in decimal form.
+    volatility_col : str, default "implied_volatility"
+        Name of the column containing annualized volatility, in decimal form.
+    output_col : str, default "model_price"
+        Name of the output column containing Black-Scholes model prices.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Copy of the input option chain with an added model price column.
+
+    Raises
+    ------
+    TypeError
+        If option_chain is not a pandas DataFrame.
+    KeyError
+        If required option-pricing columns are missing.
+    ValueError
+        If scalar pricing inputs contain invalid values.
     """
-    pass
+    if not isinstance(option_chain, pd.DataFrame):
+        raise TypeError("option_chain must be a pandas DataFrame.")
+    
+    required_cols = ["strike","expiry_date","option_type",volatility_col]
+    missing_cols = [col for col in required_cols if col not in option_chain.columns]
+    
+    if missing_cols:
+        raise KeyError(f"{missing_cols} is not present in the DataFrame.")
+    
+    options = option_chain.copy()
+    spot_price = _get_spot_price(spot_price)
+    
+    for index, row in options.iterrows():
+        
+        price = _price_option_row(
+            row=row,
+            valuation_date=valuation_date,
+            spot_price=spot_price,
+            risk_free_rate=risk_free_rate,
+            dividend_yield=dividend_yield,
+            volatility_col=volatility_col,
+        )
+        
+        options.loc[index, output_col] = price
+    
+    return options
