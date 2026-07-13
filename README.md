@@ -19,7 +19,7 @@ The repository emphasizes:
 | `pairs-trading-ai-tech`           | Complete V2, 2.1 scheduled | Equity statistical arbitrage, walk-forward validation, portfolio backtesting |
 | `Crypto_Cross-sectional_momentum` | Complete notebook research | Crypto momentum, train/test/OOS evaluation                                   |
 | `cvar_var_risk_pipeline`          | Complete small project     | VaR/CVaR risk analytics                                                      |
-| `options-research-platform`       | Early WIP                  | Options pricing, Greeks, volatility, risk tooling                            |
+| `options-research-platform`       |WIP                       | Options pricing, Greeks, volatility, risk tooling                            |
 
 ## Featured Project: Pairs Trading Research Pipeline
 
