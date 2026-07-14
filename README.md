@@ -1,25 +1,28 @@
 # Quantitative Finance Research Projects
 
-A collection of quantitative finance research projects focused on systematic trading, portfolio construction, risk analytics, and reproducible research workflows.
+A collection of Python-based quantitative finance research projects focused on systematic trading, portfolio construction, options pricing, risk analytics, validation, and reproducible research workflows.
 
 The repository emphasizes:
 
-* clean research pipelines,
-* input validation,
-* out-of-sample testing,
-* realistic implementation assumptions,
-* modular Python code,
-* readable notebooks,
-* and honest reporting of limitations.
+- clean research pipelines
+- input validation
+- out-of-sample and walk-forward testing
+- realistic implementation assumptions
+- modular Python code
+- readable notebooks
+- automated pytest coverage
+- honest reporting of limitations
 
 ## Projects
 
-| Project                           | Status                     | Focus                                                                        |
-| --------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| `pairs-trading-ai-tech`           | Complete V2, 2.1 scheduled | Equity statistical arbitrage, walk-forward validation, portfolio backtesting |
-| `Crypto_Cross-sectional_momentum` | Complete notebook research | Crypto momentum, train/test/OOS evaluation                                   |
-| `cvar_var_risk_pipeline`          | Complete small project     | VaR/CVaR risk analytics                                                      |
-| `options-research-platform`       |WIP                       | Options pricing, Greeks, volatility, risk tooling                            |
+| Project | Status | Focus |
+|---|---|---|
+| pairs-trading-ai-tech | Complete V2, V2.1 scheduled | Equity statistical arbitrage, walk-forward/OOS validation, portfolio-level backtesting, transaction-cost modelling |
+| options-research-platform | WIP | Black-Scholes pricing, option chain pricing, Greeks, scalar validation, volatility and risk tooling |
+| cvar_var_risk_pipeline | Complete small project | VaR/CVaR risk analytics |
+| Crypto_Cross-sectional_momentum | Complete notebook research | Crypto momentum, train/test/OOS evaluation |
+
+Across the active projects, the repository includes 244 automated tests covering pricing logic, validation, backtesting assumptions, edge cases, and research pipeline behavior.
 
 ## Featured Project: Pairs Trading Research Pipeline
 
@@ -33,7 +36,7 @@ It currently includes:
 * walk-forward train/test/OOS folds,
 * transaction-cost modeling,
 * portfolio construction,
-* test and OOS backtesting,
+* train/test/OOS backtesting,
 * performance diagnostics,
 * and pytest coverage for key modules.
 

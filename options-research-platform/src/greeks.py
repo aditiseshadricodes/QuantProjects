@@ -315,7 +315,43 @@ def black_scholes_rho(
     """ 
     
     """
-    pass
+    
+    #Validate inputs
+    (
+        spot_price,
+        strike_price,
+        time_to_expiry,
+        risk_free_rate,
+        volatility,
+        option_type,
+        dividend_yield
+    ) = _validate_scalar_pricing_inputs(
+        spot=spot_price,
+        strike=strike_price,
+        time_to_expiry=time_to_expiry,
+        risk_free_rate=risk_free_rate,
+        volatility=volatility,
+        option_type=option_type,
+        dividend_yield=dividend_yield
+    )
+    
+    #Calculate d2
+    d1,d2 = _d1d2(
+        spot=spot_price,
+        strike=strike_price,
+        time_to_expiry=time_to_expiry,
+        risk_free_rate=risk_free_rate,
+        volatility=volatility,
+        dividend_yield=dividend_yield,
+    )
+    
+    #Calculate rate discount
+    rate_discount = math.exp(-risk_free_rate*time_to_expiry)
+    
+    #Calculate rho
+    return (
+        strike_price*time_to_expiry*rate_discount*_norm_cdf(d2)
+    )
 
 def black_scholes_theta(
     spot_price: float,
@@ -332,7 +368,7 @@ def black_scholes_theta(
     pass
 
 def add_black_scholes_greeks_to_chain():
-    """ 
+    """
     
     """
     pass
