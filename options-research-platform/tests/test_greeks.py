@@ -294,14 +294,6 @@ BASE = {
     "volatility": 0.20,
 }
 
-PRICE_BASE = {
-    "spot": 100.0,
-    "strike": 100.0,
-    "time_to_expiry": 1.0,
-    "risk_free_rate": 0.05,
-    "dividend_yield": 0.0,
-    "volatility": 0.20,
-}
 
 def test_rho_has_correct_sign_for_call_and_put():
     call_rho = black_scholes_rho(
@@ -322,9 +314,9 @@ def test_rho_matches_finite_difference(option_type):
 
     price_up = black_scholes_price(
         **{
-            **PRICE_BASE,
+            **BASE,
             "risk_free_rate": (
-                PRICE_BASE["risk_free_rate"] + rate_bump
+                BASE["risk_free_rate"] + rate_bump
             ),
         },
         option_type=option_type,
@@ -332,9 +324,9 @@ def test_rho_matches_finite_difference(option_type):
 
     price_down = black_scholes_price(
         **{
-            **PRICE_BASE,
+            **BASE,
             "risk_free_rate": (
-                PRICE_BASE["risk_free_rate"] - rate_bump
+                BASE["risk_free_rate"] - rate_bump
             ),
         },
         option_type=option_type,
@@ -477,9 +469,9 @@ def test_theta_matches_finite_difference(option_type):
 
     price_less_time = black_scholes_price(
         **{
-            **PRICE_BASE,
+            **BASE,
             "time_to_expiry": (
-                PRICE_BASE["time_to_expiry"] - time_delta
+                BASE["time_to_expiry"] - time_delta
             ),
         },
         option_type=option_type,
@@ -487,9 +479,9 @@ def test_theta_matches_finite_difference(option_type):
 
     price_more_time = black_scholes_price(
         **{
-            **PRICE_BASE,
+            **BASE,
             "time_to_expiry": (
-                PRICE_BASE["time_to_expiry"] + time_delta
+                BASE["time_to_expiry"] + time_delta
             ),
         },
         option_type=option_type,
@@ -511,7 +503,7 @@ def test_theta_matches_finite_difference(option_type):
     )
 
 #Call - Put Theta Parity
-def test_call_put_thta_parity():
+def test_call_put_theta_parity():
     call_theta = black_scholes_theta(
         **BASE,
         option_type="call",

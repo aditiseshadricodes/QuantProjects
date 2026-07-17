@@ -215,8 +215,8 @@ def _norm_cdf(
     return 0.5 * (1 + math.erf(x / math.sqrt(2)))
 
 def _validate_scalar_pricing_inputs(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
@@ -254,8 +254,8 @@ def _validate_scalar_pricing_inputs(
     ValueError
         If inputs violate pricing constraints.
     """
-    spot = _validate_positive_float(spot,"spot")
-    strike = _validate_positive_float(strike,"strike")
+    spot_price = _validate_positive_float(spot_price,"spot")
+    strike_price = _validate_positive_float(strike_price,"strike")
     time_to_expiry = _validate_non_negative_float(time_to_expiry,"time_to_expiry")
     risk_free_rate = _validate_finite_float(risk_free_rate,"risk_free_rate")
     volatility = _validate_positive_float(volatility,"volatility")
@@ -263,8 +263,8 @@ def _validate_scalar_pricing_inputs(
     option_type = _standardize_option_type(option_type)
     
     return (
-        spot,
-        strike, 
+        spot_price,
+        strike_price, 
         time_to_expiry, 
         risk_free_rate,
         volatility, 
@@ -273,8 +273,8 @@ def _validate_scalar_pricing_inputs(
     )
 
 def _d1d2(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
@@ -289,9 +289,9 @@ def _d1d2(
 
     Parameters
     ----------
-    spot : float
+    spot_price : float
         Current price of the underlying asset. Must be positive and finite.
-    strike : float
+    strike_price : float
         Strike price of the option. Must be positive and finite.
     time_to_expiry : float
         Time to expiry in years. Must be strictly positive.
@@ -316,8 +316,8 @@ def _d1d2(
         If spot, strike, time_to_expiry, or volatility are not positive;
         if dividend_yield is negative; or if any numeric input is not finite.
         """
-    spot = _validate_positive_float(spot,"spot")
-    strike = _validate_positive_float(strike,"strike")
+    spot_price = _validate_positive_float(spot_price,"spot")
+    strike_price = _validate_positive_float(strike_price,"strike")
     time_to_expiry = _validate_positive_float(time_to_expiry,"time_to_expiry")
     risk_free_rate = _validate_finite_float(risk_free_rate,"risk_free_rate")
     volatility = _validate_positive_float(volatility,"volatility")
@@ -325,7 +325,7 @@ def _d1d2(
     
     #Compute square root of time to expiry and ln(moneyness)
     sqrt_t = math.sqrt(time_to_expiry)
-    log_moneyness = math.log(spot / strike)
+    log_moneyness = math.log(spot_price / strike_price)
     
     #Compute d1 and d2 using the Black-Scholes-Merton formulas
     d1 = (log_moneyness + (risk_free_rate - dividend_yield + 0.5 *volatility**2) * time_to_expiry) / (volatility * sqrt_t)
@@ -379,7 +379,7 @@ def _time_to_expiry(
     return calendar_days/365.0
 
 def _get_spot_price(
-    spot
+    spot_price
 ) -> float:
     """ 
     Fetches the clean, positive spot price from the given spot input.
@@ -400,8 +400,8 @@ def _get_spot_price(
     ValueError
         If spot is infinite or not positive.
     """
-    spot = _validate_positive_float(spot,"spot")
-    return spot
+    spot_price = _validate_positive_float(spot_price,"spot")
+    return spot_price
 
 def _price_option_row(
     row,
@@ -456,7 +456,7 @@ volatility_col = "implied_volatility",
     ValueError
         If scalar inputs contain invalid values.
     """
-    required_cols = ["strike","expiry_date","option_type",volatility_col]
+    required_cols = ["strike_price","expiry_date","option_type",volatility_col]
     missing_cols = [col for col in required_cols if col not in row]
     
     if missing_cols:
@@ -470,8 +470,8 @@ volatility_col = "implied_volatility",
     )
     
     return black_scholes_price(
-        spot=spot_price,
-        strike=row["strike"],
+        spot_price=spot_price,
+        strike_price=row["strike_price"],
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=row[volatility_col],
@@ -484,8 +484,8 @@ volatility_col = "implied_volatility",
 # ==========================
 
 def intrinsic_value(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     option_type
 ):
     """ 
@@ -497,9 +497,9 @@ def intrinsic_value(
     
     Parameters
     ----------
-    spot : float
+    spot_price : float
         Current price of the underlying asset.
-    strike : float
+    strike_price : float
         Strike price of the option.
     option_type : str
         Type of the option: 'call' or 'put'.
@@ -516,17 +516,17 @@ def intrinsic_value(
     ValueError
         If spot or strike are not positive or real, or if option_type is not recognized.
     """
-    spot = _validate_positive_float(spot,"spot")
-    strike = _validate_positive_float(strike,"strike")
+    spot_price = _validate_positive_float(spot_price,"spot")
+    strike_price = _validate_positive_float(strike_price,"strike")
     option_type = _standardize_option_type(option_type)
     sign = _option_sign(option_type)
     
-    intrinsic = max(sign*(spot-strike),0)
+    intrinsic = max(sign*(spot_price-strike_price),0)
     return intrinsic
 
 def black_scholes_price(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
@@ -542,9 +542,9 @@ def black_scholes_price(
 
     Parameters
     ----------
-    spot : float
+    spot_price : float
         Current price of the underlying asset. Must be positive and finite.
-    strike : float
+    strike_price : float
         Strike price of the option. Must be positive and finite.
     time_to_expiry : float
         Time to expiry in years. Must be non-negative.
@@ -574,8 +574,8 @@ def black_scholes_price(
 
     """
     #Validate option type and scalars
-    spot = _validate_positive_float(spot,"spot")
-    strike = _validate_positive_float(strike,"strike")
+    spot_price = _validate_positive_float(spot_price,"spot")
+    strike_price = _validate_positive_float(strike_price,"strike")
     time_to_expiry = _validate_non_negative_float(time_to_expiry,"time_to_expiry")
     risk_free_rate = _validate_finite_float(risk_free_rate,"risk_free_rate")
     volatility = _validate_positive_float(volatility,"volatility")
@@ -585,12 +585,12 @@ def black_scholes_price(
     
     #If option is at expiry return intrinsic value.
     if time_to_expiry == 0:
-        return intrinsic_value(spot,strike,option_type)
+        return intrinsic_value(spot_price,strike_price,option_type)
     
     #Calculate d1,d2 for Black-Scholes-Merton formula
     d1,d2 = _d1d2(
-        spot,
-        strike,
+        spot_price,
+        strike_price,
         time_to_expiry,
         risk_free_rate,
         volatility,
@@ -602,7 +602,7 @@ def black_scholes_price(
     risk_free_discount = math.exp(-risk_free_rate * time_to_expiry)
     
     #Calculate the Black-Scholes-Merton price using the formula
-    price = sign * (spot *spot_dividend_discount * _norm_cdf(sign*d1) - strike * risk_free_discount * _norm_cdf(sign*d2))
+    price = sign * (spot_price *spot_dividend_discount * _norm_cdf(sign*d1) - strike_price * risk_free_discount * _norm_cdf(sign*d2))
     return price
 
 def price_option_chain(
@@ -661,7 +661,7 @@ def price_option_chain(
     if not isinstance(option_chain, pd.DataFrame):
         raise TypeError("option_chain must be a pandas DataFrame.")
     
-    required_cols = ["strike","expiry_date","option_type",volatility_col]
+    required_cols = ["strike_price","expiry_date","option_type",volatility_col]
     missing_cols = [col for col in required_cols if col not in option_chain.columns]
     
     if missing_cols:

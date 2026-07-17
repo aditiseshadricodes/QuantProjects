@@ -21,7 +21,7 @@ from src.option_pricing import (
 @pytest.fixture
 def sample_option_chain():
     return pd.DataFrame({
-        "strike":[100.0, 100.0],
+        "strike_price":[100.0, 100.0],
         "expiry_date":["2024-12-31", "2024-12-31"],
         "option_type":["call", "put"],
         "implied_volatility":[0.20, 0.20],
@@ -189,8 +189,8 @@ def test_intrinsic_value_invalid_inputs():
 def test_validate_scalar_pricing_inputs_valid_inputs():
     
     inputs = _validate_scalar_pricing_inputs(
-        spot=100,
-        strike=100,
+        spot_price=100,
+        strike_price=100,
         time_to_expiry=1,
         risk_free_rate=0.05,
         volatility=0.2,
@@ -203,8 +203,8 @@ def test_validate_scalar_pricing_inputs_valid_inputs():
 def test_validate_scalar_pricing_inputs_zero_expiry():
     
     inputs = _validate_scalar_pricing_inputs(
-        spot=100,
-        strike=100,
+        spot_price=100,
+        strike_price=100,
         time_to_expiry=0,
         risk_free_rate=0.05,
         volatility=0.2,
@@ -217,8 +217,8 @@ def test_validate_scalar_pricing_inputs_zero_expiry():
 def test_validate_scalar_pricing_inputs_negative_risk_free_rate():
     
     inputs = _validate_scalar_pricing_inputs(
-        spot=100,
-        strike=100,
+        spot_price=100,
+        strike_price=100,
         time_to_expiry=1,
         risk_free_rate=-0.01,
         volatility=0.2,
@@ -233,8 +233,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Wrong spot type
     with pytest.raises(TypeError):
         _validate_scalar_pricing_inputs(
-            spot="100",
-            strike=100,
+            spot_price="100",
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -245,8 +245,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Negative time to expiry
     with pytest.raises(ValueError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=-1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -257,8 +257,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Infinite risk free rate
     with pytest.raises(ValueError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=float('inf'),
             volatility=0.2,
@@ -269,8 +269,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Negative volatility
     with pytest.raises(ValueError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=-0.2,
@@ -281,8 +281,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Invalid option type
     with pytest.raises(ValueError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -293,8 +293,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Negative dividend yield
     with pytest.raises(ValueError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -305,8 +305,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     #Wrong strike type
     with pytest.raises(TypeError):
         _validate_scalar_pricing_inputs(
-            spot=100,
-            strike="100",
+            spot_price=100,
+            strike_price="100",
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -316,7 +316,7 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
 
 #Valid _d1d2 inputs
 @pytest.mark.parametrize(
-    "spot, strike, time_to_expiry, risk_free_rate, volatility, dividend_yield,expected_d1,expected_d2",
+    "spot_price, strike_price, time_to_expiry, risk_free_rate, volatility, dividend_yield,expected_d1,expected_d2",
     [
         (100,100,1,0.05,0.2,0.0,0.35,0.15),
         (100,100,1,0.05,0.2,0.02,0.25,0.05),
@@ -324,8 +324,8 @@ def test_validate_scalar_pricing_inputs_invalid_inputs():
     ],
 )
 def test_d1d2_benchmark_cases(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
@@ -334,8 +334,8 @@ def test_d1d2_benchmark_cases(
     expected_d2
 ):
     d1,d2 = _d1d2(
-        spot=spot,
-        strike=strike,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -350,8 +350,8 @@ def test_d1d2_zero_time_to_expiry_input():
     
     with pytest.raises(ValueError):
         _d1d2(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=0,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -363,8 +363,8 @@ def test_d1d2_invalid_inputs():
     
     with pytest.raises(TypeError):
         _d1d2(
-            spot="100",
-            strike=100,
+            spot_price="100",
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -373,8 +373,8 @@ def test_d1d2_invalid_inputs():
         
     with pytest.raises(ValueError):
         _d1d2(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=-1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -383,8 +383,8 @@ def test_d1d2_invalid_inputs():
         
     with pytest.raises(ValueError):
         _d1d2(
-            spot=100,
-            strike=100,
+            spot_price=100,
+            strike_price=100,
             time_to_expiry=1,
             risk_free_rate=0.05,
             volatility=0.2,
@@ -393,15 +393,15 @@ def test_d1d2_invalid_inputs():
 
 #Valid Black-Scholes pricing inputs and expected outputs for call and put options
 @pytest.mark.parametrize(
-    "spot, strike, time_to_expiry, risk_free_rate, volatility, dividend_yield, option_type, expected_price",
+    "spot_price, strike_price, time_to_expiry, risk_free_rate, volatility, dividend_yield, option_type, expected_price",
     [
         (100,100,1,0.05,0.2,0.0,"call",10.4506),
         (100,100,1,0.05,0.2,0.0,"put",5.5735)
     ],
 )
 def test_black_scholes_price_benchmark_cases(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
@@ -410,8 +410,8 @@ def test_black_scholes_price_benchmark_cases(
     expected_price
 ):
     price = black_scholes_price(
-        spot=spot,
-        strike=strike,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -423,7 +423,7 @@ def test_black_scholes_price_benchmark_cases(
 
 #Cases for time to expiry = 0, where option price = intrinsic value
 @pytest.mark.parametrize(
-    "spot, strike, option_type, expected_price",
+    "spot_price, strike_price, option_type, expected_price",
     [
         (100, 90, "call", 10),  # ITM call
         (100, 110, "call", 0),  # OTM call
@@ -434,14 +434,14 @@ def test_black_scholes_price_benchmark_cases(
     ],
 )
 def test_black_scholes_price_zero_time_to_expiry(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     option_type,
     expected_price
 ):
     price = black_scholes_price(
-        spot=spot,
-        strike=strike,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=0,
         risk_free_rate=0.05,
         volatility=0.2,
@@ -453,7 +453,7 @@ def test_black_scholes_price_zero_time_to_expiry(
 
 #Put-Call Parity test cases
 @pytest.mark.parametrize(
-    "spot, strike, time_to_expiry, risk_free_rate, volatility, dividend_yield",
+    "spot_price, strike_price, time_to_expiry, risk_free_rate, volatility, dividend_yield",
     [
         (100, 100, 1, 0.05, 0.2, 0.0),
         (100, 100, 1, 0.05, 0.2, 0.02),
@@ -461,16 +461,16 @@ def test_black_scholes_price_zero_time_to_expiry(
     ],
 )
 def test_black_scholes_price_put_call_parity(
-    spot,
-    strike,
+    spot_price,
+    strike_price,
     time_to_expiry,
     risk_free_rate,
     volatility,
     dividend_yield
 ):
     call_price = black_scholes_price(
-        spot=spot,
-        strike=strike,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -479,8 +479,8 @@ def test_black_scholes_price_put_call_parity(
     )
     
     put_price = black_scholes_price(
-        spot=spot,
-        strike=strike,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -489,8 +489,8 @@ def test_black_scholes_price_put_call_parity(
     )
     
     # Calculate the present value of the strike price and spot price
-    present_value_spot = spot*math.exp(-dividend_yield*time_to_expiry)
-    present_value_strike = strike*math.exp(-risk_free_rate*time_to_expiry)
+    present_value_spot = spot_price*math.exp(-dividend_yield*time_to_expiry)
+    present_value_strike = strike_price*math.exp(-risk_free_rate*time_to_expiry)
     expected_parity = present_value_spot - present_value_strike
     
     # Check Put-Call Parity: C - P = S - PV(K)
@@ -575,7 +575,7 @@ def test_get_spot_price_invalid_inputs():
 
 def test_prices_option_row_valid_call():
     row = pd.Series({
-        "strike":100.0,
+        "strike_price":100.0,
         "expiry_date":"2024-12-31",
         "option_type":"call",
         "implied_volatility":0.20,
@@ -594,7 +594,7 @@ def test_prices_option_row_valid_call():
 
 def test_prices_option_row_valid_put():
     row = pd.Series({
-        "strike":100.0,
+        "strike_price":100.0,
         "expiry_date":"2024-12-31",
         "option_type":"put",
         "implied_volatility":0.20,
@@ -613,7 +613,7 @@ def test_prices_option_row_valid_put():
 
 def test_prices_option_row_same_day_expiry():
     row = pd.Series({
-        "strike":90.0,
+        "strike_price":90.0,
         "expiry_date":"2024-01-01",
         "option_type":"call",
         "implied_volatility":0.20,
@@ -650,7 +650,7 @@ def test_prices_option_row_missing_col():
 
 def test_prices_option_row_custom_vol():
     row = pd.Series({
-        "strike":100.0,
+        "strike_price":100.0,
         "expiry_date":"2024-12-31",
         "option_type":"call",
         "vol":0.20,
@@ -709,7 +709,7 @@ def test_price_option_chain_custom_output_col(sample_option_chain):
 
 def test_price_option_chain_custom_vol_column():
     option_chain = pd.DataFrame({
-        "strike":[100.0, 100.0],
+        "strike_price":[100.0, 100.0],
         "expiry_date":["2024-12-31", "2024-12-31"],
         "option_type":["call", "put"],
         "vol":[0.20, 0.20],
@@ -758,7 +758,7 @@ def test_price_option_chain_bad_option_chain():
 
 def test_price_option_chain_invalid_vol():
     option_chain = pd.DataFrame({
-        "strike":[100.0, 100.0],
+        "strike_price":[100.0, 100.0],
         "expiry_date":["2024-12-31", "2024-12-31"],
         "option_type":["call", "put"],
         "implied_volatility":[0.0, 0.0],

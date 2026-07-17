@@ -110,8 +110,8 @@ def black_scholes_delta(
         option_type,
         dividend_yield
     ) = _validate_scalar_pricing_inputs(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -121,8 +121,8 @@ def black_scholes_delta(
     
     #Calculate d1
     d1,_ = _d1d2(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -191,8 +191,8 @@ def black_scholes_gamma(
         option_type,
         dividend_yield
     ) = _validate_scalar_pricing_inputs(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -202,8 +202,8 @@ def black_scholes_gamma(
     
     #Calculate d1
     d1,_ = _d1d2(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -276,8 +276,8 @@ def black_scholes_vega(
         option_type,
         dividend_yield
     ) = _validate_scalar_pricing_inputs(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -287,8 +287,8 @@ def black_scholes_vega(
     
     #Calculate d1
     d1,_ = _d1d2(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -385,8 +385,8 @@ def black_scholes_rho(
         option_type,
         dividend_yield
     ) = _validate_scalar_pricing_inputs(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -397,8 +397,8 @@ def black_scholes_rho(
     
     #Calculate d2
     _,d2 = _d1d2(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -490,8 +490,8 @@ def black_scholes_theta(
         option_type,
         dividend_yield
     ) = _validate_scalar_pricing_inputs(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
@@ -502,8 +502,8 @@ def black_scholes_theta(
     
     #Calculate d2
     d1,d2 = _d1d2(
-        spot=spot_price,
-        strike=strike_price,
+        spot_price=spot_price,
+        strike_price=strike_price,
         time_to_expiry=time_to_expiry,
         risk_free_rate=risk_free_rate,
         volatility=volatility,
