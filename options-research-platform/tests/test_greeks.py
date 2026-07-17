@@ -1,10 +1,15 @@
 import pytest
+import math
+import numpy as np
 
+from src.option_pricing import black_scholes_price
 from src.greeks import (
     _norm_pdf,
     black_scholes_delta,
     black_scholes_gamma,
     black_scholes_vega,
+    black_scholes_rho,
+    black_scholes_theta
 )
 
 SPOT=100.0
@@ -251,3 +256,307 @@ def test_black_scholes_vega_invalid_option_input():
             option_type="INVALID",
             dividend_yield=DIVIDEND_YIELD,
         )
+
+#Benchmark Rho test
+def test_black_scholes_rho_benchmark_case():
+    
+    result = black_scholes_rho(
+        spot_price=SPOT,
+        strike_price=STRIKE,
+        time_to_expiry=TIME_TO_EXPIRY,
+        risk_free_rate=RISK_FREE_RATE,
+        volatility=VOLATILITY,
+        option_type="call",
+        dividend_yield=DIVIDEND_YIELD,
+    )
+    assert result == pytest.approx(0.5323248, rel=1e-3)
+    
+    result = black_scholes_rho(
+        spot_price=SPOT,
+        strike_price=STRIKE,
+        time_to_expiry=TIME_TO_EXPIRY,
+        risk_free_rate=RISK_FREE_RATE,
+        volatility=VOLATILITY,
+        option_type="put",
+        dividend_yield=DIVIDEND_YIELD,
+    )
+    assert result == pytest.approx(
+        -0.418904609047,
+        rel=1e-3,
+    )
+
+BASE = {
+    "spot_price": 100.0,
+    "strike_price": 100.0,
+    "time_to_expiry": 1.0,
+    "risk_free_rate": 0.05,
+    "dividend_yield": 0.0,
+    "volatility": 0.20,
+}
+
+PRICE_BASE = {
+    "spot": 100.0,
+    "strike": 100.0,
+    "time_to_expiry": 1.0,
+    "risk_free_rate": 0.05,
+    "dividend_yield": 0.0,
+    "volatility": 0.20,
+}
+
+def test_rho_has_correct_sign_for_call_and_put():
+    call_rho = black_scholes_rho(
+        **BASE,
+        option_type="call",
+    )
+    put_rho = black_scholes_rho(
+        **BASE,
+        option_type="put",
+    )
+
+    assert call_rho > 0.0
+    assert put_rho < 0.0
+
+@pytest.mark.parametrize("option_type", ["call", "put"])
+def test_rho_matches_finite_difference(option_type):
+    rate_bump = 1e-5
+
+    price_up = black_scholes_price(
+        **{
+            **PRICE_BASE,
+            "risk_free_rate": (
+                PRICE_BASE["risk_free_rate"] + rate_bump
+            ),
+        },
+        option_type=option_type,
+    )
+
+    price_down = black_scholes_price(
+        **{
+            **PRICE_BASE,
+            "risk_free_rate": (
+                PRICE_BASE["risk_free_rate"] - rate_bump
+            ),
+        },
+        option_type=option_type,
+    )
+
+    numerical_rho = (
+        price_up - price_down
+    ) / (2.0 * rate_bump) / 100.0
+
+    analytical_rho = black_scholes_rho(
+        **BASE,
+        option_type=option_type,
+    )
+
+    assert analytical_rho == pytest.approx(
+        numerical_rho,
+        rel=1e-3,
+        abs=1e-3,
+    )
+
+def test_call_put_rho_parity():
+    call_rho = black_scholes_rho(
+        **BASE,
+        option_type="call",
+    )
+    put_rho = black_scholes_rho(
+        **BASE,
+        option_type="put",
+    )
+
+    expected_difference = (
+        BASE["strike_price"]
+        * BASE["time_to_expiry"]
+        * math.exp(
+            -BASE["risk_free_rate"]
+            * BASE["time_to_expiry"]
+        ) / 100.0
+    )
+
+    assert call_rho - put_rho == pytest.approx(
+        expected_difference,
+        rel=1e-9,
+    )
+
+@pytest.mark.parametrize(
+    ("option_type", "expected"),
+    [
+        ("call", 0.444808223402),
+        ("put", -0.565241943682),
+    ],
+)
+def test_rho_accepts_negative_interest_rate(
+    option_type,
+    expected,
+):
+    result = black_scholes_rho(
+        **{
+            **BASE,
+            "risk_free_rate": -0.01,
+        },
+        option_type=option_type,
+    )
+
+    assert result == pytest.approx(
+        expected,
+        rel=1e-9,
+    )
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("spot_price", 0.0),
+        ("strike_price", -100.0),
+        ("time_to_expiry", -1.0),
+        ("volatility", -0.20),
+        ("risk_free_rate", np.nan),
+        ("dividend_yield", np.inf),
+        ("option_type", "banana"),
+    ],
+)
+def test_rho_rejects_invalid_inputs(
+    field,
+    invalid_value,
+):
+    inputs = {
+        **BASE,
+        "option_type": "call",
+    }
+    inputs[field] = invalid_value
+
+    with pytest.raises((TypeError, ValueError)):
+        black_scholes_rho(**inputs)
+
+#Benchmark theta value
+def test_black_scholes_theta_benchmark_case():
+    
+    result = black_scholes_theta(
+        spot_price=SPOT,
+        strike_price=STRIKE,
+        time_to_expiry=TIME_TO_EXPIRY,
+        risk_free_rate=RISK_FREE_RATE,
+        volatility=VOLATILITY,
+        option_type="call",
+        dividend_yield=DIVIDEND_YIELD,
+    )
+    assert result == pytest.approx(-0.0175726782, rel=5e-3)
+    
+    result = black_scholes_theta(
+        spot_price=SPOT,
+        strike_price=STRIKE,
+        time_to_expiry=TIME_TO_EXPIRY,
+        risk_free_rate=RISK_FREE_RATE,
+        volatility=VOLATILITY,
+        option_type="put",
+        dividend_yield=DIVIDEND_YIELD,
+    )
+    assert result == pytest.approx(
+        -0.0045421381,
+        rel=1e-3,
+    )
+
+#Sign check for theta
+def test_theta_has_correct_sign_for_call_and_put():
+    call_theta = black_scholes_theta(
+        **BASE,
+        option_type="call",
+    )
+    put_theta = black_scholes_theta(
+        **BASE,
+        option_type="put",
+    )
+
+    assert call_theta < 0.0
+    assert put_theta < 0.0
+
+#Theta finite difference
+@pytest.mark.parametrize("option_type", ["call", "put"])
+def test_theta_matches_finite_difference(option_type):
+    time_delta = 1e-5
+
+    price_less_time = black_scholes_price(
+        **{
+            **PRICE_BASE,
+            "time_to_expiry": (
+                PRICE_BASE["time_to_expiry"] - time_delta
+            ),
+        },
+        option_type=option_type,
+    )
+
+    price_more_time = black_scholes_price(
+        **{
+            **PRICE_BASE,
+            "time_to_expiry": (
+                PRICE_BASE["time_to_expiry"] + time_delta
+            ),
+        },
+        option_type=option_type,
+    )
+
+    numerical_theta = (
+        price_less_time - price_more_time
+    ) / (2.0 * time_delta) / 365.0
+
+    analytical_theta = black_scholes_theta(
+        **BASE,
+        option_type=option_type,
+    )
+
+    assert analytical_theta == pytest.approx(
+        numerical_theta,
+        rel=1e-3,
+        abs=1e-3,
+    )
+
+#Call - Put Theta Parity
+def test_call_put_thta_parity():
+    call_theta = black_scholes_theta(
+        **BASE,
+        option_type="call",
+    )
+    put_theta = black_scholes_theta(
+        **BASE,
+        option_type="put",
+    )
+
+    expected_difference = (
+        -BASE["strike_price"]
+        * BASE["risk_free_rate"]
+        * math.exp(
+            -BASE["risk_free_rate"]
+            * BASE["time_to_expiry"]
+        ) / 365.0
+    )
+
+    assert call_theta - put_theta == pytest.approx(
+        expected_difference,
+        rel=1e-9,
+    )
+
+#Invalid case
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("spot_price", 0.0),
+        ("strike_price", -100.0),
+        ("time_to_expiry", -1.0),
+        ("volatility", -0.20),
+        ("risk_free_rate", np.nan),
+        ("dividend_yield", np.inf),
+        ("option_type", "banana"),
+    ],
+)
+def test_theta_rejects_invalid_inputs(
+    field,
+    invalid_value,
+):
+    inputs = {
+        **BASE,
+        "option_type": "call",
+    }
+    inputs[field] = invalid_value
+
+    with pytest.raises((TypeError, ValueError)):
+        black_scholes_theta(**inputs)
