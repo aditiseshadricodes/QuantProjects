@@ -23,7 +23,8 @@ for robustness testing.
 """
 
 import logging
-
+import pandas as pd
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -257,3 +258,112 @@ def estimate_total_pair_cost_bps(
     total_pair_cost = total_pair_trade_cost + total_holding_cost
     
     return total_pair_cost
+
+def compute_pair_cost_series(
+    positions,
+    beta,
+    commission_bps,
+    bid_ask_spread_bps,
+    slippage_bps,
+    market_impact_bps,
+    tax_bps,
+    borrow_cost_annual_bps,
+    financing_cost_annual_bps,
+    trading_days=252
+):
+    """
+    Compute daily trade-event and holding-period costs for a pair position.
+    Costs are returned in decimal-return units, not basis points.
+    The strategy is assumed to be flat immediately before the first observation.
+    """
+    
+    if not isinstance(positions, pd.Series):
+        raise TypeError("positions must be a pandas Series.")
+
+    if positions.empty:
+        raise ValueError("positions cannot be empty.")
+
+    if positions.isna().any():
+        raise ValueError("positions cannot contain missing values.")
+
+    if not positions.isin([-1, 0, 1]).all():
+        raise ValueError("positions must contain only -1, 0, or 1.")
+
+    if not isinstance(beta, (int, float)) or not np.isfinite(beta):
+        raise ValueError("beta must be a finite numeric value.")
+
+    if not isinstance(trading_days, int) or trading_days <= 0:
+        raise ValueError("trading_days must be a positive integer.")
+
+    previous_position = positions.shift(1).fillna(0)
+    position_change = (positions - previous_position).abs()
+    
+    #Estimate one-way transaction cost in bps and as decimal.
+    one_way_cost_bps = estimate_one_way_trade_event_cost_bps(
+        commission_bps,
+        bid_ask_spread_bps,
+        slippage_bps,
+        market_impact_bps,
+        tax_bps
+    )
+    one_way_cost_rate = bps_to_decimal(
+        one_way_cost_bps
+    )
+    
+    #Calculating scaled costs
+    gross_pair_notional = 1 + abs(beta)
+    trade_event_cost = (
+        position_change
+        * gross_pair_notional
+        * one_way_cost_rate
+    )
+    y_exposure = positions.astype(float)
+    x_exposure = -beta * positions.astype(float)
+    
+    long_notional = (
+        y_exposure.clip(lower=0)
+        + x_exposure.clip(lower=0)
+    )
+
+    short_notional = (
+        y_exposure.clip(upper=0).abs()
+        + x_exposure.clip(upper=0).abs()
+    )
+    
+    daily_borrow_rate = bps_to_decimal(borrow_cost_annual_bps) / trading_days
+    borrow_cost = short_notional * daily_borrow_rate
+    
+    daily_financing_rate = bps_to_decimal(financing_cost_annual_bps) / trading_days
+    financing_cost = long_notional * daily_financing_rate
+    
+    result_df = pd.DataFrame(
+        {
+            "position":positions,
+            "position_change":position_change,
+            "long_notional":long_notional,
+            "short_notional":short_notional,
+            "trade_event_cost":trade_event_cost,
+            "borrow_cost":borrow_cost,
+            "financing_cost":financing_cost,
+        },
+        index=positions.index
+    )
+    
+    result_df["total_cost"] = result_df[
+        ["trade_event_cost","borrow_cost","financing_cost"]
+    ].sum(axis=1)
+    
+    cost_columns = [
+        "trade_event_cost",
+        "borrow_cost",
+        "financing_cost",
+        "total_cost",
+    ]
+
+    if result_df[cost_columns].isna().any().any():
+        raise ValueError("Cost calculation produced missing values.")
+
+    if (result_df[cost_columns] < 0).any().any():
+        raise ValueError("Cost calculation produced negative costs.")
+    
+    return result_df
