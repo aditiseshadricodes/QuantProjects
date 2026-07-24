@@ -16,7 +16,7 @@ z-score features have already been created using spread_model.py.
 
 import pandas as pd
 import numpy as np
-
+from src.cost_model import compute_pair_cost_series
 
 def generate_zscore_signals(
     zscore,
@@ -155,7 +155,14 @@ def compute_strategy_returns(
     pair_returns,
     positions,
     hedge_model,
-    transaction_cost_bps = 0.0
+    commission_bps,
+    bid_ask_spread_bps,
+    slippage_bps,
+    market_impact_bps,
+    tax_bps,
+    borrow_cost_annual_bps,
+    financing_cost_annual_bps,
+    trading_days=252,
 ):
     
     #pair_returns is a pandas DataFrame
@@ -198,11 +205,11 @@ def compute_strategy_returns(
         raise TypeError("beta should be numeric.")
     
     #transaction cost is numeric and nonnegative
-    if not isinstance(transaction_cost_bps,(int,float,np.number)):
-        raise TypeError("transaction cost should be numeric.")
+    if not isinstance(commission_bps,(int,float,np.number)):
+        raise TypeError("commission should be numeric.")
     
-    if transaction_cost_bps < 0:
-        raise ValueError("transaction cost should be nonnegative.")
+    if commission_bps < 0:
+        raise ValueError("commission should be nonnegative.")
     
     #align returns and positions by date
     positions = positions.copy()
@@ -223,10 +230,21 @@ def compute_strategy_returns(
     returns_position_df["strategy_return_before_cost"] = returns_position_df["lagged_position"]* returns_position_df["spread_return"]
     
     #adding in transaction costs
-    cost_rate = transaction_cost_bps / 10000
     returns_position_df["position_change"] = returns_position_df["lagged_position"].diff().abs().fillna(0)
-    returns_position_df["transaction_cost"] = cost_rate * returns_position_df["position_change"]
-    returns_position_df["strategy_return"] = returns_position_df["strategy_return_before_cost"] - returns_position_df["transaction_cost"]
+    cost_result = compute_pair_cost_series(
+        positions=returns_position_df["lagged_position"],
+        beta=beta,
+        commission_bps=commission_bps,
+        bid_ask_spread_bps=bid_ask_spread_bps,
+        slippage_bps=slippage_bps,
+        market_impact_bps=market_impact_bps,
+        tax_bps=tax_bps,
+        borrow_cost_annual_bps=borrow_cost_annual_bps,
+        financing_cost_annual_bps=financing_cost_annual_bps,
+        trading_days=trading_days
+    )
+    returns_position_df["total_cost"] = cost_result["total_cost"]
+    returns_position_df["strategy_return"] = returns_position_df["strategy_return_before_cost"] - returns_position_df["total_cost"]
     
     return returns_position_df
 
@@ -234,9 +252,16 @@ def run_pair_backtest(
     price_matrix,
     zscore,
     hedge_model,
+    commission_bps,
+    bid_ask_spread_bps,
+    slippage_bps,
+    market_impact_bps,
+    tax_bps,
+    borrow_cost_annual_bps,
+    financing_cost_annual_bps,
     entry_threshold = 2.0,
     exit_threshold = 0.5,
-    transaction_cost_bps=0,
+    trading_days=252,
     min_observations = 60
 ):
     
@@ -286,9 +311,26 @@ def run_pair_backtest(
     
     positions = generate_positions_from_signals(signals)
     
-    pair_returns = compute_pair_returns(price_matrix, asset_y, asset_x, min_observations)
+    pair_returns = compute_pair_returns(
+        price_matrix,
+        asset_y,
+        asset_x,
+        min_observations
+    )
     
-    backtest_df = compute_strategy_returns(pair_returns, positions, hedge_model, transaction_cost_bps)
+    backtest_df = compute_strategy_returns(
+        pair_returns,
+        positions,
+        hedge_model,
+        commission_bps,
+        bid_ask_spread_bps,
+        slippage_bps,
+        market_impact_bps,
+        tax_bps,
+        borrow_cost_annual_bps,
+        financing_cost_annual_bps,
+        trading_days,
+    )
     
     results = {
         "asset_y":asset_y,
@@ -296,7 +338,7 @@ def run_pair_backtest(
         "hedge_model":hedge_model,
         "entry_threshold":entry_threshold,
         "exit_threshold":exit_threshold,
-        "transaction_cost_bps":transaction_cost_bps,
+        "total_cost":backtest_df["total_cost"],
         "signals":signals,
         "positions":positions,
         "pair_returns":pair_returns,

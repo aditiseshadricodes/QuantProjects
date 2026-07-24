@@ -1070,3 +1070,81 @@ def test_cost_model_returns_non_negative_economic_quantities():
     ]
     
     assert (result[non_negative_cols]>=0).all().all()
+    
+def test_negative_beta_preserves_trade_cost_magnitude_flips_exposure_direction():
+    
+    #Positions Series
+    positions = pd.Series(
+        [0.0,1.0,1.0,0.0,-1.0,-1.0,0.0],
+        index = pd.date_range("2024-01-01", periods=7)
+    )
+    
+    #Generating results for Positive and Negative beta
+    result_pos_beta = compute_pair_cost_series(
+        positions=positions,
+        **make_cost_kwargs(
+            beta=2.00,
+            commission_bps=10.0,
+            bid_ask_spread_bps=20.0,
+            slippage_bps=30.0,
+            market_impact_bps=40.0,
+            borrow_cost_annual_bps=252.0,
+            financing_cost_annual_bps=252.0,
+            trading_days=252
+        ),
+    )
+    
+    result_neg_beta = compute_pair_cost_series(
+        positions=positions,
+        **make_cost_kwargs(
+            beta=-2.00,
+            commission_bps=10.0,
+            bid_ask_spread_bps=20.0,
+            slippage_bps=30.0,
+            market_impact_bps=40.0,
+            borrow_cost_annual_bps=252.0,
+            financing_cost_annual_bps=252.0,
+            trading_days=252
+        ),
+    )
+    
+    #Verifying the trade event cost is same in both cases.
+    pd.testing.assert_series_equal(
+        result_pos_beta["trade_event_cost"],
+        result_neg_beta["trade_event_cost"],
+        check_names=False
+    )
+    
+    #Inspect Negative beta with +1 position
+    assert result_neg_beta.iloc[2]["position"] == 1.0
+    daily_financing_cost = 252.0 / 10_000 / 252
+    assert result_neg_beta.iloc[2]["long_notional"] == 3.0
+    assert result_neg_beta.iloc[2]["short_notional"] == 0.0
+    assert result_neg_beta.iloc[2]["financing_cost"] == pytest.approx(
+        result_neg_beta.iloc[2]["long_notional"] * daily_financing_cost
+    )
+    assert result_neg_beta.iloc[2]["borrow_cost"] == 0
+    
+    #Inspect Negative beta with -1 position
+    assert result_neg_beta.iloc[5]["position"] == -1.0
+    daily_borrow_cost = 252.0 / 10_000 / 252
+    assert result_neg_beta.iloc[5]["long_notional"] == 0.0
+    assert result_neg_beta.iloc[5]["short_notional"] == 3.0
+    assert result_neg_beta.iloc[5]["borrow_cost"] == pytest.approx(
+        result_neg_beta.iloc[5]["short_notional"] * daily_borrow_cost
+    )
+    assert result_neg_beta.iloc[5]["financing_cost"] == 0
+    
+    #Verifying that the results are non-negative in certain columns
+    non_negative_cols = [
+        "position_change",
+        "long_notional",
+        "short_notional",
+        "trade_event_cost",
+        "borrow_cost",
+        "financing_cost",
+        "total_cost",
+    ]
+    
+    assert (result_pos_beta[non_negative_cols]>=0).all().all()
+    assert (result_neg_beta[non_negative_cols]>=0).all().all()
