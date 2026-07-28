@@ -22,6 +22,10 @@ mean return t-stat, Newey-West pvalue.
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
+from src.data_validator import (
+    validate_non_negative_integer_values,
+    validate_positive_integer_values
+)
 
 def _validate_returns(
     strategy_returns
@@ -276,18 +280,10 @@ def compute_newey_west_tstat(
     strategy_returns = _validate_returns(strategy_returns)
     
     #lags is an integer and nonnegative
-    if not isinstance(lags,(int,np.integer)):
-        raise TypeError("lags must be an integer.")
-    
-    if lags < 0:
-        raise ValueError("lags must be nonnegative.")
+    lags = validate_positive_integer_values(lags)
     
     #periods_per_year is numeric and positive
-    if not isinstance(periods_per_year,(int,np.number)):
-        raise TypeError("periods_per_year must be numeric.")
-    
-    if periods_per_year <= 0:
-        raise ValueError("periods_per_year must be positive.")
+    periods_per_year = validate_positive_integer_values(periods_per_year)
     
     #set y as cleaned strategy returns and x as constant only
     y  = strategy_returns

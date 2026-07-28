@@ -37,6 +37,7 @@ def validation_price_matrix(
         TypeError if the input type is invalid
         ValueError if the data fails a required validation check
     """
+    
     validation_checks_passed=[]
     logger.info("Starting price matrix validation.")
     # Check if the price matrix is a pandas DataFrame
@@ -111,6 +112,63 @@ def validation_price_matrix(
     }
     logger.info("All price validation checks performed.")
     return prices, list_of_diagnostics
+def validate_numeric_values(
+    x
+):
+    
+    if not isinstance(x,(int,float)):
+        raise TypeError("The value should be numeric.")
+    
+    return float(x)
+
+def validate_integer_values(
+    x
+):
+    
+    if not isinstance(x,(int)):
+        raise TypeError("The value should be numeric.")
+    
+    return int(x)
+
+def validate_non_negative_numeric_values(
+    x
+):
+    
+    x = validate_numeric_values(x)
+    if x < 0:
+        raise ValueError("This number should be greater than or equal to zero.")
+    
+    return x
+
+def validate_positive_numeric_values(
+    x
+):
+    
+    x = validate_numeric_values(x)
+    if x <= 0:
+        raise ValueError("This number should be greater than zero.")
+    
+    return x
+
+def validate_non_negative_integer_values(
+    x
+):
+    
+    x = validate_integer_values(x)
+    if x < 0:
+        raise ValueError("This integer should be greater than or equal to zero.")
+    
+    return x
+
+def validate_positive_integer_values(
+    x
+):
+    
+    x = validate_integer_values(x)
+    if x <= 0:
+        raise ValueError("This integer should be greater than zero.")
+    
+    return x
 
 def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=0.05):
     """This function performs a variety of checks on the volume matrix to ensure that
@@ -217,3 +275,4 @@ def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=
     logger.info("All volume validation checks performed.")
     
     return volumes, list_of_diagnostics
+
