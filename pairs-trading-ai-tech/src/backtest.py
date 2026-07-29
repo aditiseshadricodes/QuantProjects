@@ -17,6 +17,12 @@ z-score features have already been created using spread_model.py.
 import pandas as pd
 import numpy as np
 from src.cost_model import compute_pair_cost_series
+from src.data_validator import (
+    validate_non_negative_numeric_values,
+    validate_positive_numeric_values,
+    validate_positive_integer_values,
+    validate_numeric_values
+)
 
 def generate_zscore_signals(
     zscore,
@@ -33,18 +39,10 @@ def generate_zscore_signals(
         raise ValueError("zscore should not be empty.")
     
     #entry_threshold is positive and numeric
-    if not isinstance( entry_threshold,(int,float,np.number)):
-        raise TypeError("entry_threshold should be numeric")
-    
-    if entry_threshold <= 0:
-        raise ValueError("entry_threshold should be positive.")
+    entry_threshold = validate_positive_numeric_values(entry_threshold)
     
     #exit_threshold is positive and numeric
-    if not isinstance( exit_threshold,(int,float,np.number)):
-        raise TypeError("exit_threshold should be numeric")
-    
-    if exit_threshold < 0:
-        raise ValueError("exit_threshold should be positive.")
+    exit_threshold = validate_positive_numeric_values(exit_threshold)
     
     #exit_threshold should be less than entry_threshold
     if exit_threshold >= entry_threshold:
@@ -111,11 +109,7 @@ def compute_pair_returns(
         raise ValueError("price_matrix should not be empty.")
     
     #min_observations is positive and an integer
-    if not isinstance(min_observations, (int, np.number)):
-        raise TypeError("min_observations should be an integer.")
-    
-    if min_observations <= 0:
-        raise ValueError("min_observations should be positive.")
+    min_observations = validate_positive_integer_values(min_observations)
     
     #asset_y and asset_x exist in the columns of price-matrix
     if not asset_y in price_matrix.columns or not asset_x in price_matrix.columns:
@@ -201,15 +195,33 @@ def compute_strategy_returns(
     
     #beta is numeric
     beta = hedge_model["beta"]
-    if not isinstance(beta, (int, float, np.number)):
-        raise TypeError("beta should be numeric.")
+    beta = validate_numeric_values(beta)
     
     #transaction cost is numeric and nonnegative
-    if not isinstance(commission_bps,(int,float,np.number)):
-        raise TypeError("commission should be numeric.")
-    
-    if commission_bps < 0:
-        raise ValueError("commission should be nonnegative.")
+    commission_bps = validate_non_negative_numeric_values(
+        commission_bps
+    )
+    bid_ask_spread_bps = validate_non_negative_numeric_values(
+        bid_ask_spread_bps
+    )
+    slippage_bps = validate_non_negative_numeric_values(
+        slippage_bps
+    )
+    market_impact_bps = validate_non_negative_numeric_values(
+        market_impact_bps
+    )
+    tax_bps = validate_non_negative_numeric_values(
+        tax_bps
+    )
+    borrow_cost_annual_bps = validate_non_negative_numeric_values(
+        borrow_cost_annual_bps
+    )
+    financing_cost_annual_bps = validate_non_negative_numeric_values(
+        financing_cost_annual_bps
+    )
+    trading_days = validate_positive_integer_values(
+        trading_days
+    )
     
     #align returns and positions by date
     positions = positions.copy()
@@ -302,8 +314,33 @@ def run_pair_backtest(
     if not isinstance(asset_x, str):
         raise TypeError("asset_x should be a string.")
     
-    if not isinstance(beta,(int,float,np.number)):
-        raise TypeError("beta must be numeric.")
+    beta = validate_numeric_values(
+        beta
+    )
+    commission_bps = validate_non_negative_numeric_values(
+        commission_bps
+    )
+    bid_ask_spread_bps = validate_non_negative_numeric_values(
+        bid_ask_spread_bps
+    )
+    slippage_bps = validate_non_negative_numeric_values(
+        slippage_bps
+    )
+    market_impact_bps = validate_non_negative_numeric_values(
+        market_impact_bps
+    )
+    tax_bps = validate_non_negative_numeric_values(
+        tax_bps
+    )
+    borrow_cost_annual_bps = validate_non_negative_numeric_values(
+        borrow_cost_annual_bps
+    )
+    financing_cost_annual_bps = validate_non_negative_numeric_values(
+        financing_cost_annual_bps
+    )
+    trading_days = validate_positive_integer_values(
+        trading_days
+    )
     
     #Orchestration of the backtest functions
     

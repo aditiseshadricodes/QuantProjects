@@ -70,7 +70,17 @@ import pandas as pd
 import numpy as np
 import itertools
 from statsmodels.tsa.stattools import coint
-from src.spread_model import compute_log_prices, estimate_hedge_model, compute_spread
+from src.spread_model import (
+    compute_log_prices,
+    estimate_hedge_model,
+    compute_spread
+)
+from src.data_validator import (
+    validate_positive_integer_values,
+    validate_positive_numeric_values,
+    validate_non_negative_numeric_values,
+    validate_numeric_values
+)
 
 def generate_candidate_pairs(price_matrix):
     
@@ -225,20 +235,18 @@ def estimate_half_life(spread, min_observations=60, max_missing_threshold = 0.05
     if spread.empty:
         raise ValueError("The spread cannot be empty.")
     
-    #integer type check for min_observations
-    if not isinstance(min_observations, int):
-        raise TypeError("min_observations should be of type integer.")
+    #Validate min_observations
+    min_observations = validate_positive_integer_values(
+        min_observations
+    )
     
-    #min_observations is a positive integer
-    if min_observations <= 0:
-        raise ValueError("min_observations should be a positive integer.")
-    
-    #Type check of max_missing_threshold
-    if not isinstance(max_missing_threshold, (int,float,np.number)):
-        raise TypeError("max_missing_threshold should be a numeric value.")
+    #Validate max_missing_threshold
+    max_missing_threshold = validate_non_negative_numeric_values(
+        max_missing_threshold
+    )
     
     #Value check of max_missing_threshold
-    if max_missing_threshold < 0 or max_missing_threshold >=1:
+    if max_missing_threshold >=1:
         raise ValueError("The max_missing_threshold is incorrect.")
     
     #missing values is in an acceptable threshold
@@ -302,21 +310,15 @@ def compute_liquidity_metrics(dollar_volume_matrix, asset_y, asset_x, min_observ
     if asset_y == asset_x:
         raise ValueError("asset_y should be different from asset_x.")
     
-    #Check that min_observations is an integer
-    if not isinstance(min_observations, int):
-        raise TypeError("min_observations should be an integer.")
+    #Validate min_observations
+    min_observations = validate_positive_integer_values(
+        min_observations
+    )
     
-    #Check that min_observations is a positive integer:
-    if min_observations <= 0:
-        raise ValueError("min_observations must be a positive integer.")
-    
-    #Check that min_avg_dollar_volume is numeric
-    if not isinstance(min_avg_dollar_volume,(int,float,np.number)):
-        raise TypeError("min_avg_dollar_volume must be numeric.")
-    
-    #Check that min_average_dollar_volume is positive
-    if min_avg_dollar_volume <= 0:
-        raise ValueError("min_avg_dollar_volume must be positive.")
+    #CValidate min_avg_dollar_volume 
+    min_avg_dollar_volume = validate_positive_numeric_values(
+        min_avg_dollar_volume
+    )
     
     #Extracting both dollar volume series
     dollar_vol_y = dollar_volume_matrix[asset_y]
@@ -394,53 +396,43 @@ def select_top_pairs(price_matrix, dollar_volume_matrix, top_n=5, min_observatio
     if not price_matrix.index.equals(dollar_volume_matrix.index):
         raise ValueError("The price and dollar volume matrices should have the same index.")
     
-    #top_n is an integer
-    if not isinstance(top_n, int):
-        raise TypeError("top_n should be an integer.")
+    #Validate top_n
+    top_n = validate_positive_integer_values(
+        top_n
+    )
     
-    #top_n is positive
-    if top_n <= 0:
-        raise ValueError("top_n should be positive.")
-    
-    #min_observations is an integer
-    if not isinstance(min_observations, int):
-        raise TypeError("min_observations should be an integer.")
-    
-    #min_observations is positive
-    if min_observations <= 0:
-        raise ValueError("min_observations should be positive.")
+    #Validate min_observations
+    min_observations = validate_positive_integer_values(
+        min_observations
+    )
     
     #min_correlation is numeric
-    if not isinstance(min_correlation, (int,float,np.number)):
-        raise TypeError("min_correlation should be numeric.")
+    min_correlation = validate_numeric_values(
+        min_correlation
+    )
     
     #min_correlation is between -1 and 1
     if abs(min_correlation) > 1:
         raise ValueError("min_correlation must be between -1 and 1.")
     
-    #pvalue_threshold is numeric
-    if not isinstance(pvalue_threshold, (int,float,np.number)):
-        raise TypeError("pvalue_threshold should be numeric.")
+    #pvalue_threshold is validated
+    pvalue_threshold = validate_non_negative_numeric_values(
+        pvalue_threshold
+    )
     
     #pvalue_threshold is between 0 and 1
-    if pvalue_threshold > 1 or pvalue_threshold < 0:
+    if pvalue_threshold > 1:
         raise ValueError("pvalue_threshold must be between 0 and 1.")
     
-    #max_half_life is numeric
-    if not isinstance(max_half_life, (int,float,np.number)):
-        raise TypeError("max_half_life should be numeric.")
+    #max_half_life is validated
+    max_half_life = validate_positive_numeric_values(
+        max_half_life
+    )
     
-    #max_half_life is positive
-    if max_half_life <= 0:
-        raise ValueError("max_half_life should be positive.")
-    
-    #min_avg_dollar_volume is numeric
-    if not isinstance(min_avg_dollar_volume, (int,float,np.number)):
-        raise TypeError("min_avg_dollar_volume should be numeric.")
-    
-    #min_avg_dollar_volume is positive
-    if min_avg_dollar_volume <= 0:
-        raise ValueError("min_avg_dollar_volume should be positive.")
+    #min_avg_dollar_volume is validated
+    min_avg_dollar_volume = validate_positive_numeric_values(
+        min_avg_dollar_volume
+    )
     
     #Obtaining candidate pairs and preparing pair results
     candidate_pairs = generate_candidate_pairs(price_matrix)

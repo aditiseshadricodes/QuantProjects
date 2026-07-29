@@ -9,6 +9,11 @@ before it is returned.
 """
 
 import json
+from src.data_validator import (
+    validate_non_negative_numeric_values,
+    validate_positive_numeric_values,
+    validate_positive_integer_values
+)
 
 def load_universe_config(
     universe_file_path
@@ -133,35 +138,31 @@ def load_run_config(
     if end_date <= start_date:
         raise ValueError("the start_date should be before the end date.")
     
-    if not isinstance(pvalue_threshold, (int, float)):
-        raise TypeError("pvalue_threshold should be numeric.")
+    pvalue_threshold = validate_positive_numeric_values(
+        pvalue_threshold
+    )
     
-    if pvalue_threshold < 0 or pvalue_threshold>0.1:
+    if pvalue_threshold>0.1:
         raise ValueError("pvalue_threshold should be between 0 and 0.1.")
     
-    if not isinstance(top_n, int):
-        raise TypeError("top_n should be an integer.")
+    top_n = validate_positive_integer_values(
+        top_n
+    )
     
-    if top_n <= 0:
-        raise ValueError("top_n should be positive")
+    missing_threshold = validate_positive_numeric_values(
+        missing_threshold
+    )
     
-    if not isinstance(missing_threshold, (int, float)):
-        raise TypeError("missing_threshold should be numeric.")
-    
-    if missing_threshold < 0 or missing_threshold > 0.1:
+    if  missing_threshold > 0.1:
         raise ValueError("The missing value_threshold must be less than 10%.")
     
-    if not isinstance(min_avg_dollar_volume, (int, float)):
-        raise TypeError("min_avg_dollar_volume should be numeric.")
+    min_avg_dollar_volume = validate_positive_numeric_values(
+        min_avg_dollar_volume
+    )
     
-    if min_avg_dollar_volume <= 0:
-        raise ValueError("The min_avg_dollar_volume must be positive.")
-    
-    if not isinstance(min_observations, int):
-        raise TypeError("min_observations should be an integer.")
-    
-    if min_observations <= 0:
-        raise ValueError("There should be a positive number of minimum required observations.")
+    min_observations = validate_positive_integer_values(
+        min_observations
+    )
     
     return data
 
@@ -192,22 +193,22 @@ def load_metrics_config(metrics_json_file_path):
     newey_west_lags = data["newey_west_lags"]
     
     #Type and Value checks for metrics
-    if not isinstance(periods_per_year, int):
-        raise TypeError("periods_per_year should be an integer.")
+    periods_per_year = validate_positive_integer_values(
+        periods_per_year
+    )
     
-    if not isinstance(risk_free_rate, (int, float)):
-        raise TypeError("risk_free_rate should be a decimal value.")
+    risk_free_rate = validate_non_negative_numeric_values(
+        risk_free_rate
+    )
     
-    if not isinstance(newey_west_lags, int):
-        raise TypeError("newey_west_lags should be an integer.")
+    newey_west_lags = validate_positive_integer_values(
+        newey_west_lags
+    )
     
-    if periods_per_year <= 0 or periods_per_year>270:
+    if periods_per_year>270:
         raise ValueError("periods_per_year should be between 1 and number of trading days in a year.")
     
-    if risk_free_rate < 0.0 or risk_free_rate > 1.0:
+    if risk_free_rate > 1.0:
         raise ValueError("risk_free_rate is a percentage value between 0 and 1.")
-    
-    if newey_west_lags < 0:
-        raise ValueError("newey_west_lags should be a positive integer.")
     
     return data

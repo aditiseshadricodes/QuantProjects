@@ -26,6 +26,13 @@ import logging
 import pandas as pd
 import numpy as np
 
+from src.data_validator import (
+    validate_non_negative_numeric_values,
+    validate_non_negative_integer_values,
+    validate_positive_integer_values,
+    validate_numeric_values,
+)
+
 logger = logging.getLogger(__name__)
 
 def bps_to_decimal(
@@ -35,17 +42,9 @@ def bps_to_decimal(
     """ 
     Converts basis points into a decimal value by dividing by 10000
     """
-    
-    if not isinstance(bps,(int,float)):
-        logger.error("The basis points value should be a number.")
-        raise TypeError("The basis points value should be numeric.")
+    bps = validate_non_negative_numeric_values(bps)
     logger.info("The value in basis points is numeric.")
-    
-    if bps < 0:
-        logger.error("The value in basis points should not be negative.")
-        raise ValueError("The value in basis points should not be negative.")
-    logger.info("The value in basis points is valid.")
-    
+        
     return bps / 10_000
 
 def estimate_one_way_trade_event_cost_bps(
@@ -63,54 +62,29 @@ def estimate_one_way_trade_event_cost_bps(
     """
     
     #Validate that all costs are numeric and greater than or equal to 0.
-    if not isinstance(commission_bps,(int,float)):
-        logger.error("The commission in basis points should be a number.")
-        raise TypeError("The commission cost in basis points should be numeric.")
-    logger.info("The commission value in basis points is numeric.")
-    
-    if commission_bps < 0:
-        logger.error("The commission cost in basis points should not be negative.")
-        raise ValueError("The commission cost in basis points should not be negative.")
+    commission_bps = validate_non_negative_numeric_values(
+        commission_bps
+    )
     logger.info("Commission cost in basis points is valid.")
     
-    if not isinstance(bid_ask_spread_bps,(int,float)):
-        logger.error("The bid-ask spread in basis points should be a number.")
-        raise TypeError("The bid-ask spread in basis points should be numeric.")
-    logger.info("The bid-ask spread in basis points is numeric.")
-    
-    if bid_ask_spread_bps < 0:
-        logger.error("The bid-ask spread in basis points should not be negative.")
-        raise ValueError("The bid-ask spread in basis points should not be negative.")
+    bid_ask_spread_bps = validate_non_negative_numeric_values(
+        bid_ask_spread_bps
+    )
     logger.info("The bid-ask spread in basis points is valid.")
     
-    if not isinstance(slippage_bps,(int,float)):
-        logger.error("The slippage in basis points should be a number.")
-        raise TypeError("The slippage in basis points should be numeric.")
-    logger.info("The slippage in basis points is numeric.")
-    
-    if slippage_bps < 0:
-        logger.error("The slippage in basis points should not be negative.")
-        raise ValueError("The slippage in basis points should not be negative.")
+    slippage_bps = validate_non_negative_numeric_values(
+        slippage_bps
+    )
     logger.info("Slippage in basis points is valid.")
     
-    if not isinstance(market_impact_bps,(int,float)):
-        logger.error("The market impact in basis points should be a number.")
-        raise TypeError("The market impact in basis points should be numeric.")
-    logger.info("The market impact in basis points is numeric.")
-    
-    if market_impact_bps < 0:
-        logger.error("The market impact in basis points should not be negative.")
-        raise ValueError("The market impact in basis points should not be negative.")
+    market_impact_bps = validate_non_negative_numeric_values(
+        market_impact_bps
+    )
     logger.info("The market impact value in basis points is valid.")
     
-    if not isinstance(tax_bps,(int,float)):
-        logger.error("The tax rate in basis points should be a number.")
-        raise TypeError("The tax rate in basis points should be numeric.")
-    logger.info("The tax rate in basis points is numeric.")
-    
-    if tax_bps < 0:
-        logger.error("The tax rate in basis points should not be negative.")
-        raise ValueError("The tax rate in basis points should not be negative.")
+    tax_bps = validate_non_negative_numeric_values(
+        tax_bps
+    )
     logger.info("The tax rate in basis points is valid.")
         
     #Calculate the one-way trading cost when a trading event happens
@@ -138,44 +112,26 @@ def estimate_holding_cost_bps(
     """
     
     #Validate that all costs are numeric and greater than or equal to 0.
-    if not isinstance(holding_days,(int)):
-        logger.error("The holding_days duration should be an integer.")
-        raise TypeError("The holding_days duration should be an integer.")
-    logger.info("The holding days duration is numeric.")
-    
-    if holding_days < 0:
-        logger.error("The holding_days duration should be positive.")
-        raise ValueError("The holding_days duration should be positive.")
+    holding_days = validate_non_negative_integer_values(
+        holding_days
+    )
     logger.info("The holding_days duration is valid.")
     
-    if not isinstance(borrow_cost_annual_bps,(int,float)):
-        logger.error("The annual borrowing cost in  basis points should be a number.")
-        raise TypeError("The annual borrowing cost in basis points should be numeric.")
-    logger.info("The annual borrowing cost in basis points is numeric.")
-    
-    if borrow_cost_annual_bps < 0:
-        logger.error("The annual borrowing cost in basis points should not be negative.")
-        raise ValueError("The annual borrowing cost in basis points should not be negative.")
+    borrow_cost_annual_bps = validate_non_negative_numeric_values(
+        borrow_cost_annual_bps
+    )
     logger.info("The annual borrowing cost in basis points is valid.")
     
-    if not isinstance(financing_cost_annual_bps,(int,float)):
-        logger.error("The annual financing cost should be a number.")
-        raise TypeError("The annual financing cost in basis points should be numeric.")
-    logger.info("The annual financing cost in basis points is numeric.")
-    
-    if financing_cost_annual_bps < 0:
-        logger.error("The annual financing cost in basis points should not be negative.")
-        raise ValueError("The annual financing cost in basis points should not be negative.")
+    financing_cost_annual_bps = validate_non_negative_numeric_values(
+        financing_cost_annual_bps
+    )
     logger.info("The annual financing cost in basis points is valid.")
     
-    if not isinstance(trading_days, int):
-        logger.error("Trading days should be an integer.")
-        raise TypeError("Trading days should be an integer.")
-    
-    if trading_days <= 0:
-        logger.error("Trading days should be positive.")
-        raise ValueError("Trading days should be positive.")
-    
+    trading_days = validate_positive_integer_values(
+        trading_days
+    )
+    logger.error("Trading days should be positive.")
+        
     #Calculate cost of holding an asset in pairs trading
     borrow_cost_daily = borrow_cost_annual_bps / trading_days
     financing_cost_daily = financing_cost_annual_bps / trading_days
@@ -238,7 +194,49 @@ def estimate_total_pair_cost_bps(
     int or float
         Total estimated pair trade cost in basis points.
     """
+    commission_bps = validate_non_negative_numeric_values(
+        commission_bps
+    )
+    logger.info("Commission cost in basis points is valid.")
     
+    bid_ask_spread_bps = validate_non_negative_numeric_values(
+        bid_ask_spread_bps
+    )
+    logger.info("The bid-ask spread in basis points is valid.")
+    
+    slippage_bps = validate_non_negative_numeric_values(
+        slippage_bps
+    )
+    logger.info("Slippage in basis points is valid.")
+    
+    market_impact_bps = validate_non_negative_numeric_values(
+        market_impact_bps
+    )
+    logger.info("The market impact value in basis points is valid.")
+    
+    tax_bps = validate_non_negative_numeric_values(
+        tax_bps
+    )
+    logger.info("The tax rate in basis points is valid.")
+    holding_days = validate_non_negative_integer_values(
+        holding_days
+    )
+    logger.info("The holding_days duration is valid.")
+    
+    borrow_cost_annual_bps = validate_non_negative_numeric_values(
+        borrow_cost_annual_bps
+    )
+    logger.info("The annual borrowing cost in basis points is valid.")
+    
+    financing_cost_annual_bps = validate_non_negative_numeric_values(
+        financing_cost_annual_bps
+    )
+    logger.info("The annual financing cost in basis points is valid.")
+    
+    trading_days = validate_positive_integer_values(
+        trading_days
+    )
+    logger.error("Trading days should be positive.")
     #Computing both trade event and holding costs
     total_pair_trade_cost = 4 * estimate_one_way_trade_event_cost_bps(
         commission_bps=commission_bps,
@@ -288,12 +286,53 @@ def compute_pair_cost_series(
 
     if not positions.isin([-1, 0, 1]).all():
         raise ValueError("positions must contain only -1, 0, or 1.")
+    
+    beta = validate_numeric_values(
+        beta
+    )
 
-    if not isinstance(beta, (int, float)) or not np.isfinite(beta):
+    if not np.isfinite(beta):
         raise ValueError("beta must be a finite numeric value.")
 
-    if not isinstance(trading_days, int) or trading_days <= 0:
-        raise ValueError("trading_days must be a positive integer.")
+    commission_bps = validate_non_negative_numeric_values(
+        commission_bps
+    )
+    logger.info("Commission cost in basis points is valid.")
+    
+    bid_ask_spread_bps = validate_non_negative_numeric_values(
+        bid_ask_spread_bps
+    )
+    logger.info("The bid-ask spread in basis points is valid.")
+    
+    slippage_bps = validate_non_negative_numeric_values(
+        slippage_bps
+    )
+    logger.info("Slippage in basis points is valid.")
+    
+    market_impact_bps = validate_non_negative_numeric_values(
+        market_impact_bps
+    )
+    logger.info("The market impact value in basis points is valid.")
+    
+    tax_bps = validate_non_negative_numeric_values(
+        tax_bps
+    )
+    logger.info("The tax rate in basis points is valid.")
+    
+    borrow_cost_annual_bps = validate_non_negative_numeric_values(
+        borrow_cost_annual_bps
+    )
+    logger.info("The annual borrowing cost in basis points is valid.")
+    
+    financing_cost_annual_bps = validate_non_negative_numeric_values(
+        financing_cost_annual_bps
+    )
+    logger.info("The annual financing cost in basis points is valid.")
+    
+    trading_days = validate_positive_integer_values(
+        trading_days
+    )
+    logger.error("Trading days should be positive.")
 
     previous_position = positions.shift(1).fillna(0)
     position_change = (positions - previous_position).abs()
