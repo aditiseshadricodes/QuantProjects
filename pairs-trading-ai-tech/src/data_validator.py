@@ -159,6 +159,9 @@ def validate_integer_values(
     if not isinstance(x,(int)):
         raise TypeError("The value should be numeric.")
     
+    if isinstance(x,bool):
+        raise TypeError("The value should be an integer.")
+    
     return int(x)
 
 def validate_non_negative_numeric_values(

@@ -80,11 +80,10 @@ def compute_annualized_return(
     
     #Validate strategy_returns and periods_per_year
     strategy_returns = _validate_returns(strategy_returns)
-    if not isinstance(periods_per_year,(int,float,np.number)):
-        raise TypeError("periods_per_year should be numeric.")
     
-    if periods_per_year <=0:
-        raise ValueError("periods_per_year should be a positive number.")
+    periods_per_year = validate_positive_integer_values(
+        periods_per_year
+    )
     
     #Count observations
     n_periods = strategy_returns.shape[0]
