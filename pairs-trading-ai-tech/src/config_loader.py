@@ -12,7 +12,8 @@ import json
 from src.data_validator import (
     validate_non_negative_numeric_values,
     validate_positive_numeric_values,
-    validate_positive_integer_values
+    validate_positive_integer_values,
+    validate_dictionary,
 )
 
 def load_universe_config(
@@ -24,11 +25,7 @@ def load_universe_config(
         data = json.load(file)
         
     #Check if data is a dictionary and is not empty
-    if not isinstance(data, dict):
-        raise TypeError("data should be a dictionary.")
-    
-    if len(data) == 0:
-        raise ValueError("Data should not be empty.")
+    data = validate_dictionary(data)
     
     #tickers exist in data
     if not "tickers" in data:
@@ -66,11 +63,7 @@ def load_run_config(
         data = json.load(file)
         
     #Check that data is a non-empty dictionary
-    if not isinstance(data, dict):
-        raise TypeError("data should be a dictionary.")
-    
-    if len(data) == 0:
-        raise ValueError("Data should not be empty.")
+    data = validate_dictionary(data)
     
     #Key check for date_range, data loader, backtest, spread_model, saving files
     # and pair selection.
@@ -172,11 +165,7 @@ def load_metrics_config(metrics_json_file_path):
         data = json.load(file)
         
     #Check that data is a non-empty dictionary
-    if not isinstance(data, dict):
-        raise TypeError("data should be a dictionary.")
-    
-    if len(data) == 0:
-        raise ValueError("Data should not be empty.")
+    data = validate_dictionary(data)
     
     #Check if metrics needed are present as keys.
     if not "periods_per_year" in data:

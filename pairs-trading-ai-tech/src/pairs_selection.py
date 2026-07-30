@@ -79,18 +79,15 @@ from src.data_validator import (
     validate_positive_integer_values,
     validate_positive_numeric_values,
     validate_non_negative_numeric_values,
-    validate_numeric_values
+    validate_numeric_values,
+    validate_dataframe,
+    validate_series,
 )
 
 def generate_candidate_pairs(price_matrix):
     
     #Pandas Dataframe check
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("Price matrix should be a pandas DataFrame.")
-    
-    #Price matrix is not empty check
-    if price_matrix.empty:
-        raise ValueError("The price matrix should not be empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     #Price matrix should have at least 2 assets
     if price_matrix.shape[1] < 2:
@@ -109,12 +106,7 @@ def generate_candidate_pairs(price_matrix):
 def compute_pair_correlation(price_matrix,asset_y,asset_x,min_observations=60):
     
     #Pandas Dataframe check
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("Price matrix should be a pandas DataFrame.")
-    
-    #Price matrix is not empty check
-    if price_matrix.empty:
-        raise ValueError("The price matrix should not be empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     #Check that asset_y and asset_x are in the columns of price matrix
     if not asset_y in price_matrix.columns or not asset_x in price_matrix.columns:
@@ -155,15 +147,18 @@ def compute_pair_correlation(price_matrix,asset_y,asset_x,min_observations=60):
     
     return summary
 
-def run_cointegration_test(price_matrix,asset_y,asset_x,min_observations=60,pvalue_threshold=0.05,trend='c',use_log_prices=True):
+def run_cointegration_test(
+    price_matrix,
+    asset_y,
+    asset_x,
+    min_observations=60,
+    pvalue_threshold=0.05,
+    trend='c',
+    use_log_prices=True
+):
     
     #Pandas Dataframe check
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("Price matrix should be a pandas DataFrame.")
-    
-    #Price matrix is not empty check
-    if price_matrix.empty:
-        raise ValueError("The price matrix should not be empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     #Check that asset_y and asset_x are in the columns of price matrix
     if not asset_y in price_matrix.columns or not asset_x in price_matrix.columns:
@@ -218,7 +213,11 @@ def run_cointegration_test(price_matrix,asset_y,asset_x,min_observations=60,pval
     
     return summary_dict
 
-def estimate_half_life(spread, min_observations=60, max_missing_threshold = 0.05):
+def estimate_half_life(
+    spread, 
+    min_observations=60, 
+    max_missing_threshold = 0.05
+):
     
     """ 
     The purpose of this function is to check the half-life of the spread.
@@ -228,12 +227,7 @@ def estimate_half_life(spread, min_observations=60, max_missing_threshold = 0.05
     """
     
     #Spread is a pandas Series.
-    if not isinstance(spread, pd.Series):
-        raise TypeError("The spread should be a pandas Series.")
-    
-    #Spread is not empty
-    if spread.empty:
-        raise ValueError("The spread cannot be empty.")
+    spread  = validate_series(spread)
     
     #Validate min_observations
     min_observations = validate_positive_integer_values(
@@ -292,15 +286,16 @@ def estimate_half_life(spread, min_observations=60, max_missing_threshold = 0.05
     
     return summary_dict
 
-def compute_liquidity_metrics(dollar_volume_matrix, asset_y, asset_x, min_observations=60,min_avg_dollar_volume =10_000_000):
+def compute_liquidity_metrics(
+    dollar_volume_matrix,
+    asset_y,
+    asset_x,
+    min_observations=60,
+    min_avg_dollar_volume =10_000_000
+):
     
     #dollar_volume_matrix is a pandas DataFrame
-    if not isinstance(dollar_volume_matrix,pd.DataFrame):
-        raise TypeError("dollar_volume_matrix must be a pandas DataFrame.")
-    
-    #dollar_volume_matrix is not empty check
-    if dollar_volume_matrix.empty:
-        raise ValueError("dollar_volume_matrix should not be empty.")
+    dollar_volume_matrix = validate_dataframe(dollar_volume_matrix)
     
     #asset_y and asset_x exist in the columns
     if not asset_y in dollar_volume_matrix.columns or not asset_x in dollar_volume_matrix.columns:
@@ -353,7 +348,18 @@ def compute_liquidity_metrics(dollar_volume_matrix, asset_y, asset_x, min_observ
     
     return summary_dict
 
-def select_top_pairs(price_matrix, dollar_volume_matrix, top_n=5, min_observations=60, min_correlation=0.7, pvalue_threshold=0.05, max_half_life=60, min_avg_dollar_volume=10_000_000, trend='c',use_log_prices=True):
+def select_top_pairs(
+    price_matrix,
+    dollar_volume_matrix, 
+    top_n=5, 
+    min_observations=60, 
+    min_correlation=0.7, 
+    pvalue_threshold=0.05,
+    max_half_life=60,
+    min_avg_dollar_volume=10_000_000, 
+    trend='c',
+    use_log_prices=True
+):
     
     """
     This function converts the pair-level functions into a pairs selection pipeline.
@@ -373,20 +379,10 @@ def select_top_pairs(price_matrix, dollar_volume_matrix, top_n=5, min_observatio
     """
     
     #Check that price matrix is a DataFrame
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("The price_matrix should be a pandas DataFrame.")
-    
-    #Check that the price matrix is not empty
-    if price_matrix.empty:
-        raise ValueError("The price matrix should not be empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     #Check that dollar volume matrix is a DataFrame
-    if not isinstance(dollar_volume_matrix, pd.DataFrame):
-        raise TypeError("The dollar_volume_matrix should be a pandas DataFrame.")
-    
-    #Check that the dollar volume matrix is not empty
-    if dollar_volume_matrix.empty:
-        raise ValueError("The dollar_volume_matrix should not be empty.")  
+    dollar_volume_matrix = validate_dataframe(dollar_volume_matrix)
     
     #Price and dollar volume matrices have the same columns
     if not price_matrix.columns.equals(dollar_volume_matrix.columns):
@@ -466,8 +462,7 @@ def select_top_pairs(price_matrix, dollar_volume_matrix, top_n=5, min_observatio
     pairs_result_df = pd.DataFrame(pairs_results)
     
     #Checking if pairs_result_df is empty
-    if pairs_result_df.empty:
-        raise ValueError("pairs_result_df should be populated.")
+    pairs_result_df = validate_dataframe(pairs_result_df)
     
     #Filtering pairs_result_df
     #Here we are counting only pairs with positive correlation and not pairs where 1 asset offsets the other.

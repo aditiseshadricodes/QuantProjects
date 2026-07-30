@@ -21,7 +21,9 @@ from src.data_validator import (
     validate_non_negative_numeric_values,
     validate_positive_numeric_values,
     validate_positive_integer_values,
-    validate_numeric_values
+    validate_numeric_values,
+    validate_dataframe,
+    validate_series,
 )
 
 def generate_zscore_signals(
@@ -30,13 +32,8 @@ def generate_zscore_signals(
     exit_threshold = 0.5
 ):
     
-    #z-score is a pandas Series
-    if not isinstance(zscore, pd.Series):
-        raise TypeError("zscore should be a pandas Series.")
-    
-    #z-score is not empty check
-    if zscore.empty:
-        raise ValueError("zscore should not be empty.")
+    #z-score is a populated pandas Series
+    zscore = validate_series(zscore)
     
     #entry_threshold is positive and numeric
     entry_threshold = validate_positive_numeric_values(entry_threshold)
@@ -64,13 +61,8 @@ def generate_positions_from_signals(
     signals
 ):
     
-    #signals is a pandas Series
-    if not isinstance(signals, pd.Series):
-        raise TypeError("signals should be a pandas Series.")
-    
-    #signals is not empty
-    if signals.empty:
-        raise ValueError("signals should not be empty.")
+    #signals is a populated pandas Series
+    signals = validate_series(signals)
     
     #signals should only contain 1, -1, 0, or nan.
     if not signals.dropna().isin([-1, 0, 1]).all():
@@ -100,13 +92,8 @@ def compute_pair_returns(
     min_observations = 60
 ):
     
-    #price_matrix is a pandas DataFrame
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("price_matrix should be a pandas DataFrame.")
-    
-    #price matrix is not empty
-    if price_matrix.empty:
-        raise ValueError("price_matrix should not be empty.")
+    #price_matrix is a populated pandas DataFrame
+    price_matrix = validate_dataframe(price_matrix)
     
     #min_observations is positive and an integer
     min_observations = validate_positive_integer_values(min_observations)
@@ -160,12 +147,7 @@ def compute_strategy_returns(
 ):
     
     #pair_returns is a pandas DataFrame
-    if not isinstance(pair_returns, pd.DataFrame):
-        raise TypeError("pair_returns should be a pandas DataFrame.")
-    
-    #pair_returns is  not empty
-    if pair_returns.empty:
-        raise ValueError("pair_returns should not be empty.")
+    pair_returns = validate_dataframe(pair_returns)
     
     #asset_y_returns and asset_x_returns are in pair_returns
     required_cols = ["asset_y_returns","asset_x_returns"]
@@ -174,12 +156,7 @@ def compute_strategy_returns(
     
     
     #positions is a pandas Series
-    if not isinstance(positions, pd.Series):
-        raise TypeError("positions should be a pandas Series.")
-    
-    #positions is not empty
-    if positions.empty:
-        raise ValueError("positions should not be empty.")
+    positions = validate_series(positions)
     
     #positions can only contain 0, -1 and 1
     if not (positions.dropna().isin([-1, 1, 0])).all():
@@ -278,18 +255,10 @@ def run_pair_backtest(
 ):
     
     #price_matrix is a pandas DataFrame which is not empty
-    if not isinstance(price_matrix, pd.DataFrame):
-        raise TypeError("price_matrix must be a pandas DataFrame.")
-    
-    if price_matrix.empty:
-        raise ValueError("price_matrix must not be empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     #zscore is a pandas Series and is not empty
-    if not isinstance(zscore, pd.Series):
-        raise TypeError("zscore must be a pandas Series.")
-    
-    if zscore.empty:
-        raise ValueError("zscore must not be empty.")
+    zscore = validate_series(zscore)
     
     #hedge_model ia a dictionary and has asset_y, asset_x and beta
     if not isinstance(hedge_model,dict):

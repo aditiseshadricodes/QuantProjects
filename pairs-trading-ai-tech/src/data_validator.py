@@ -3,6 +3,46 @@ import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
+
+def validate_dataframe(
+    sample_df
+):
+    
+    if not isinstance(sample_df,pd.DataFrame):
+        raise TypeError("The input must be a pandas DataFrame.")
+    
+    if sample_df.empty:
+        raise ValueError("The input DataFrame must not be empty.")
+    
+    logger.info("The input is a populated pandas DataFrame.")
+    return sample_df
+
+def validate_series(
+    sample
+):
+    
+    if not isinstance(sample,pd.Series):
+        raise TypeError("The input must be a pandas Series.")
+    
+    if sample.empty:
+        raise ValueError("The input Series must not be empty.")
+    
+    logger.info("The input is a populated pandas Series.")
+    return sample
+
+def validate_dictionary(
+    sample
+):
+    
+    if not isinstance(sample,dict):
+        raise TypeError("The input must be a dictionary.")
+    
+    if len(sample)==0:
+        raise ValueError("The input dictionary must not be empty.")
+    
+    logger.info("The input is a populated Python dictionary.")
+    return sample
+
 def validation_price_matrix(
     prices,
     min_observations=756,
@@ -41,17 +81,8 @@ def validation_price_matrix(
     validation_checks_passed=[]
     logger.info("Starting price matrix validation.")
     # Check if the price matrix is a pandas DataFrame
-    if not isinstance(prices,pd.DataFrame):
-        logger.error("DataFrame check failed: prices is not a pandas DataFrame.")
-        raise TypeError("Input price matrix must be a pandas DataFrame.")
-    validation_checks_passed.append('DataFrame check passed.')
+    prices = validate_dataframe(prices)
     logger.info("DataFrame check passed: the input matrix is a pandas DataFrame.")
-    
-    #Check that prices matrix is not empty
-    if prices.empty:
-        logger.error("Non-empty check failed: the price_matrix is empty.")
-        raise ValueError("Input price matrix is empty.")
-    validation_checks_passed.append('Non-empty check passed.')
     logger.info("Non-empty check passed: the input matrix is populated.")
     
     #Check if the index is date-like
@@ -203,17 +234,7 @@ def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=
     validation_checks_passed=[]
     logger.info("Starting volume matrix validation.")
     # Check if the volume matrix is a pandas DataFrame
-    if not isinstance(volumes,pd.DataFrame):
-        logger.error("DataFrame check failed: volumes is not a pandas DataFrame.")
-        raise TypeError("Input volume matrix must be a pandas DataFrame.")
-    validation_checks_passed.append('DataFrame check passed.')
-    logger.info("DataFrame check passed: the input matrix is a pandas DataFrame.")
-    
-    #Check that volumes matrix is not empty
-    if volumes.empty:
-        logger.error("Non-empty check failed: the volume_matrix is empty.")
-        raise ValueError("Input volume matrix is empty.")
-    validation_checks_passed.append('Non-empty check passed.')
+    volumes = validate_dataframe(volumes)
     logger.info("Non-empty check passed: the input matrix is populated.")
     
     #Check if the index is date-like
@@ -275,4 +296,3 @@ def validation_volume_matrix(volumes,min_observations=756,max_missing_threshold=
     logger.info("All volume validation checks performed.")
     
     return volumes, list_of_diagnostics
-

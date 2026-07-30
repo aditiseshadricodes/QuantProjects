@@ -31,6 +31,7 @@ from src.data_validator import (
     validate_non_negative_integer_values,
     validate_positive_integer_values,
     validate_numeric_values,
+    validate_series,
 )
 
 logger = logging.getLogger(__name__)
@@ -275,11 +276,7 @@ def compute_pair_cost_series(
     The strategy is assumed to be flat immediately before the first observation.
     """
     
-    if not isinstance(positions, pd.Series):
-        raise TypeError("positions must be a pandas Series.")
-
-    if positions.empty:
-        raise ValueError("positions cannot be empty.")
+    positions = validate_series(positions)
 
     if positions.isna().any():
         raise ValueError("positions cannot contain missing values.")

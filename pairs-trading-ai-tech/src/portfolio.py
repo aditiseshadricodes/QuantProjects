@@ -10,6 +10,9 @@ backtesting. It only handles portfolio weighting and return aggregation.
 
 import logging
 import pandas as pd
+from src.data_validator import (
+    validate_dataframe
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +22,8 @@ def validate_selected_pairs(
 ) -> None:
     
     #Validate the selected_pair DataFrame.
-        
-    if not isinstance(selected_pairs_df, pd.DataFrame):
-        raise TypeError("The selected pairs should be in a pandas DataFrame.")
+    selected_pairs_df = validate_dataframe(selected_pairs_df)
     
-    if selected_pairs_df.empty:
-        raise ValueError("The selected pairs DataFrame should not be empty.")
     if required_cols is not None:
         required_cols = set(required_cols)
         missing_cols = required_cols - set(selected_pairs_df.columns)

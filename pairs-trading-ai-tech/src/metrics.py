@@ -24,7 +24,8 @@ import numpy as np
 import statsmodels.api as sm
 from src.data_validator import (
     validate_non_negative_integer_values,
-    validate_positive_integer_values
+    validate_positive_integer_values,
+    validate_series,
 )
 
 def _validate_returns(
@@ -32,12 +33,7 @@ def _validate_returns(
 ):
     
     #strategy_returns is a pandas Series
-    if not isinstance(strategy_returns, pd.Series):
-        raise TypeError("strategy_returns should be a pandas Series.")
-    
-    #strategy_returns is not empty
-    if strategy_returns.empty:
-        raise ValueError("strategy_returns should not be empty.")
+    strategy_returns = validate_series(strategy_returns)
     
     #drop Nans
     strategy_returns = strategy_returns.dropna()

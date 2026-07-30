@@ -14,14 +14,16 @@ Warning:
 """
 import pandas as pd
 import numpy as np
+from src.data_validator import (
+    validate_dataframe,
+    validate_dictionary,
+    validate_series,
+    validate_positive_integer_values,
+)
 
 def compute_log_prices(price_matrix):
     
-    if not isinstance(price_matrix,pd.DataFrame):
-        raise TypeError("Input price matrix must be a pandas DataFrame.")
-    
-    if price_matrix.empty:
-        raise ValueError("Input price matrix is empty.")
+    price_matrix = validate_dataframe(price_matrix)
     
     if (price_matrix <=0).any().any():
         raise ValueError("Price matrix contains non-positive values, cannot compute log prices.")
@@ -33,11 +35,7 @@ def compute_log_prices(price_matrix):
 def estimate_hedge_model(log_price_matrix,asset_y,asset_x,min_observations=60):
     
     #Validation checks similar to data_validator.py    
-    if not isinstance(log_price_matrix,pd.DataFrame):
-        raise TypeError("Input log price matrix must be a pandas DataFrame.")
-    
-    if log_price_matrix.empty:
-        raise ValueError("Input log price matrix is empty.")
+    log_price_matrix = validate_dataframe(log_price_matrix)
     
     if asset_y not in log_price_matrix.columns or asset_x not in log_price_matrix.columns:
         raise ValueError("Both assets must be present in the log price matrix.")
@@ -73,16 +71,10 @@ def estimate_hedge_model(log_price_matrix,asset_y,asset_x,min_observations=60):
 def compute_spread(log_price_matrix,hedge_model):
     
     #log_price_matrix is a pandas DataFrame check
-    if not isinstance(log_price_matrix, pd.DataFrame):
-        raise TypeError("Input log price matrix must be a pandas DataFrame.")
-    
-    #Log price matrix is non-empty check
-    if log_price_matrix.empty:
-        raise ValueError("Input log price matrix is empty.")
+    log_price_matrix = validate_dataframe(log_price_matrix)
     
     #Hedge model is a dictionary check
-    if not isinstance(hedge_model, dict):
-        raise TypeError("Hedge model must be a dictionary containing 'asset_y', 'asset_x', 'alpha', and 'beta'.")
+    hedge_model = validate_dictionary(hedge_model)
     
     #Hedge model contains required keys check
     if not all(key in hedge_model for key in ['alpha','beta','asset_y','asset_x']):
@@ -110,15 +102,11 @@ def compute_spread(log_price_matrix,hedge_model):
 def compute_zscore(spread, window=60):
     
     #spread is a pandas Series check
-    if not isinstance(spread, pd.Series):
-        raise TypeError("Spread must be a pandas Series.")
-    
-    #Spread is non-empty check
-    if spread.empty:
-        raise ValueError("Spread should not be empty.")
+    spread = validate_series(spread)
     
     #Window is positive, an integer and less than the length of the spread
-    if not isinstance(window, int) or window <=0  or window >= len(spread):
+    window = validate_positive_integer_values(window)
+    if window >= len(spread):
         raise ValueError("Window should be a positive integer less than the length of spread.")
     
     #Rolling standard deviation should not be zero check
