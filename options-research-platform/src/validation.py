@@ -4,6 +4,102 @@ universe. This universe is currently 20 top us stocks plus SPY.
 """
 
 import pandas as pd
+import math
+
+def _validate_finite_int(
+    value,
+    name: str) -> int:
+    """ 
+    Validate that a value is a finite real scalar and return it as float.
+    
+    Parameters
+    ----------
+    value : any
+        Input value to validate.
+    name : str
+        Name of the parameter for error messages.
+    
+    Returns
+    -------
+    float
+        The validated float value.
+    
+    Raises
+    ------
+    TypeError
+        If value is not a float or int.
+    ValueError
+        If value is not finite (NaN or infinite).
+    """
+    if isinstance(value,bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be a numeric type (int or float), got {type(value)}")
+    
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be a finite number, got {value}")
+    
+    return value
+
+def _validate_positive_int(
+    value,
+    name: str
+) -> int:
+    """ 
+    Validate that value is a positive finite scalar and return it as float.
+    
+    Parameters
+    ----------
+    value : any
+        Input value to validate.
+    name : str
+        Name of the parameter for error messages.
+
+    Returns
+    -------
+    float
+        The validated float value.
+
+    Raises
+    ------
+    TypeError
+        If value is not a float or int.
+    ValueError
+        If value is not finite or not positive.
+    """
+    value = _validate_finite_int(value,name)
+    if value <= 0:
+        raise ValueError(f"{name} must be positive, got {value}")
+    return value
+
+def _validate_non_negative_int(
+    value,
+    name: str
+) -> int:
+    """ 
+    Validate that value is a non-negative finite scalar and return it as float.
+    
+    Parameters
+    ----------
+    value : any
+        Input value to validate.
+    name : str
+        Name of the parameter for error messages.
+
+    Returns
+    -------
+    float
+        The validated float value.
+
+    Raises
+    ------
+    TypeError
+        If value is not a float or int.
+    ValueError
+        If value is not finite or is negative.
+    """
+    value = _validate_finite_int(value,name)
+    if value < 0:
+        raise ValueError(f"{name} must be non-negative, got {value}")
+    return value
 
 def validate_option_chain_df(
     df,
