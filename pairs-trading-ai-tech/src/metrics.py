@@ -23,7 +23,7 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 from src.data_validator import (
-    validate_non_negative_integer_values,
+    validate_numeric_values,
     validate_positive_integer_values,
     validate_series,
 )
@@ -106,11 +106,9 @@ def compute_annualized_volatility(
     
     #Validate strategy_returns and periods_per_year
     strategy_returns = _validate_returns(strategy_returns)
-    if not isinstance(periods_per_year,(int,float,np.number)):
-        raise TypeError("periods_per_year should be numeric.")
-    
-    if periods_per_year <=0:
-        raise ValueError("periods_per_year should be a positive number.")
+    periods_per_year = validate_positive_integer_values(
+        periods_per_year
+    )
     
     #Calculate annualized volatility
     daily_volatility = strategy_returns.std()
@@ -126,15 +124,14 @@ def compute_sharpe_ratio(
     
     #Validate strategy_returns and periods_per_year
     strategy_returns = _validate_returns(strategy_returns)
-    if not isinstance(periods_per_year,(int,float,np.number)):
-        raise TypeError("periods_per_year should be numeric.")
-    
-    if periods_per_year <=0:
-        raise ValueError("periods_per_year should be a positive number.")
+    periods_per_year = validate_positive_integer_values(
+        periods_per_year
+    )
     
     #Validate the risk-free rate
-    if not isinstance(risk_free_rate,(int,float,np.number)):
-        raise TypeError("risk_free_rate should be numeric.")
+    risk_free_rate = validate_numeric_values(
+        risk_free_rate
+    )
         
     #Calculate annualized_return and annualized_volatility
     annualized_volatility = compute_annualized_volatility(strategy_returns, periods_per_year)
@@ -156,7 +153,7 @@ def compute_drawdown(
     
     #calculate drawdown
     wealth_index = (1 + strategy_returns).cumprod()
-    running_max = wealth_index.cummax()
+    running_max = wealth_index.cummax().clip(lower=1.0)
     
     drawdown = wealth_index / running_max -1
     drawdown.name = "drawdown"
