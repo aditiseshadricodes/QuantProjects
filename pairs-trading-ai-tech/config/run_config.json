@@ -35,8 +35,39 @@
     "backtest":{
         "entry_threshold":2.0,
         "exit_threshold":0.5,
-        "transaction_cost_bps":0,
         "min_observations":60,
         "selected_pair_mode":"top_cointegration_passing_pair"
-    }    
+    },
+    "cost_scenarios":{
+        "gross":{
+            "trading_days":252,
+            "commission_bps":0,
+            "bid_ask_spread_bps":0,
+            "slippage_bps":0,
+            "market_impact_bps":0,
+            "tax_bps":0,
+            "borrow_cost_annual_bps":0,
+            "financing_cost_annual_bps":0
+        },
+        "base":{
+            "trading_days":252,
+            "commission_bps":0.5,
+            "bid_ask_spread_bps":1,
+            "slippage_bps":1,
+            "market_impact_bps":0.5,
+            "tax_bps":0,
+            "borrow_cost_annual_bps":50,
+            "financing_cost_annual_bps":500
+        },
+        "conservative":{
+            "trading_days":252,
+            "commission_bps":1,
+            "bid_ask_spread_bps":2,
+            "slippage_bps":2,
+            "market_impact_bps":1,
+            "tax_bps":0,
+            "borrow_cost_annual_bps":100,
+            "financing_cost_annual_bps":1000
+        }
+    } 
 }

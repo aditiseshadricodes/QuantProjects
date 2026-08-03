@@ -64,3 +64,4 @@ def test_compute_strategy_returns_zero_costs_preserves_gross_returns():
         .gt(0)
         .any()
     )
+    

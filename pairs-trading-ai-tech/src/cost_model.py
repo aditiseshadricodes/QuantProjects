@@ -131,7 +131,7 @@ def estimate_holding_cost_bps(
     trading_days = validate_positive_integer_values(
         trading_days
     )
-    logger.error("Trading days should be positive.")
+    logger.info("Trading days should be positive.")
         
     #Calculate cost of holding an asset in pairs trading
     borrow_cost_daily = borrow_cost_annual_bps / trading_days
@@ -237,7 +237,7 @@ def estimate_total_pair_cost_bps(
     trading_days = validate_positive_integer_values(
         trading_days
     )
-    logger.error("Trading days should be positive.")
+    logger.info("Trading days should be positive.")
     #Computing both trade event and holding costs
     total_pair_trade_cost = 4 * estimate_one_way_trade_event_cost_bps(
         commission_bps=commission_bps,
@@ -329,7 +329,7 @@ def compute_pair_cost_series(
     trading_days = validate_positive_integer_values(
         trading_days
     )
-    logger.error("Trading days should be positive.")
+    logger.info("Trading days should be positive.")
 
     previous_position = positions.shift(1).fillna(0)
     position_change = (positions - previous_position).abs()

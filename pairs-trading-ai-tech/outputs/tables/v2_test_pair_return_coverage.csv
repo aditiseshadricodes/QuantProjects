@@ -1,4 +1,10 @@
-fold_id,expected_pairs,returned_pairs,missing_pairs,status
-fold_1,50,50,0,success
-fold_2,50,50,0,success
-fold_3,24,24,0,success
+scenario,fold_id,expected_pairs,returned_pairs,missing_pairs,status
+gross,fold_1,50,50,0,success
+gross,fold_2,50,50,0,success
+gross,fold_3,24,24,0,success
+base,fold_1,50,50,0,success
+base,fold_2,50,50,0,success
+base,fold_3,24,24,0,success
+conservative,fold_1,50,50,0,success
+conservative,fold_2,50,50,0,success
+conservative,fold_3,24,24,0,success
